@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  drivingconsole:
+    image: drivingconsole
+    build:
+      context: .
+      dockerfile: Driving.Console/Dockerfile
