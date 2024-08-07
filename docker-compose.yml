@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  drivingconsole:
+    image: drivingconsole
+    build:
+      context: .
+      dockerfile: Driving.Console/Dockerfile
+      args:
+        - configuration=Debug
+    depends_on:
+      db:
+        condition: service_healthy
+      # browserless:
+      #   condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword;
+      # - BROWSERLESS_URL=http://browserless:3000
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      # - .:/app
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d mydatabase -U myuser" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      # browserless:
+      #   image: browserless/chrome
+      #   container_name: "browserless"
+      #   ports:
+      #     - "3000:3000"
+      #   environment:
+      #     - MAX_CONCURRENT_SESSIONS=10
+      #     - BROWSERLESS_TOKEN=094632bb-e326-4c63-b953-82b55700b14c
+      #   healthcheck:
+      #     test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
+      #     interval: 5s
+      #     timeout: 10s
+      #     retries: 5
+      #     start_period: 15s
+      #     start_interval: 5s
+volumes:
+  postgres_data:
