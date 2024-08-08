@@ -1,4 +1,4 @@
-﻿using Domain;
+﻿using Domain.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace Driven.Persistence.Postgres;

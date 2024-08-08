@@ -1,33 +1,9 @@
-﻿namespace Domain;
+namespace Domain.Model;
 
-public interface IWebscraperPort
+public enum ProjectSource
 {
-    Task<List<Project>> Scrape(ProjectSource source);
+    Hays = 0,
 }
-
-public interface IProjectRepository
-{
-    Task AddRange(List<Project> projects);
-}
-
-public class WebscraperService
-{
-    private readonly IWebscraperPort _port;
-    private readonly IProjectRepository _projectRepository;
-
-    public WebscraperService(IWebscraperPort port, IProjectRepository projectRepository)
-    {
-        _port = port ?? throw new ArgumentNullException(nameof(port));
-        _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
-    }
-
-    public async Task Scrape()
-    {
-        var projects = await _port.Scrape(ProjectSource.Hays);
-        await _projectRepository.AddRange(projects);
-    }
-}
-
 
 public class Project
 {
@@ -39,6 +15,7 @@ public class Project
         ProjectIdentifier = projectIdentifier;
         Description = description;
         JobLocation = jobLocation;
+        FirstSeenAt = DateTime.Now;
     }
 
     public int Id { get; init; }
@@ -48,6 +25,8 @@ public class Project
     public string? ProjectIdentifier { get; }
     public string? Description { get; }
     public string? JobLocation { get; }
+    public DateTime FirstSeenAt { get; }
+    public DateTime? RemovedAt { get; private set; }
 
     public bool IsCSharp =>
         Description?.Contains("C#") ?? false
@@ -56,9 +35,20 @@ public class Project
     public bool IsDotNet =>
         Description?.Contains(".NET") ?? false
         || Title.Contains(".NET");
-}
 
-public enum ProjectSource
-{
-    Hays = 0,
+    public void MarkAsRemoved()
+    {
+        if (RemovedAt.HasValue) throw new InvalidOperationException("Project is already removed");
+        RemovedAt = DateTime.Now;
+    }
+
+    public bool IsSameProject(Project other)
+    {
+        if (Source != other.Source) return false;
+        if (ProjectIdentifier != other.ProjectIdentifier) return false;
+        if (Url != other.Url) return false;
+        if (Title != other.Title) return false;
+
+        return true;
+    }
 }

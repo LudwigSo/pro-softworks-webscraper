@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Domain;
+using Domain.Model;
 using HtmlAgilityPack;
 
 namespace Driven.Webscraper;
