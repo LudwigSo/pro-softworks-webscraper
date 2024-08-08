@@ -1,17 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Domain;
+using Domain.Services.Webscraper;
 using Driven.Persistence.Postgres;
 using Driven.Webscraper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Playwright;
-using OpenQA.Selenium.Chrome;
-using WebDriverManager;
-using WebDriverManager.DriverConfigs.Impl;
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("Hello World!");
 
 // await Task.Delay(1200000);
 
@@ -22,14 +19,19 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 // Setup dependency injection
-var serviceCollection = new ServiceCollection();
-serviceCollection.AddDbContext<Context>(options =>
-    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-);
+var serviceCollection = new ServiceCollection()
+    .AddPersistencePostgres(configuration)
+    .AddDomainServices()
+    .AddWebscraper();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
 serviceProvider.GetRequiredService<Context>().Database.Migrate();
+
+var webscraper = serviceProvider.GetRequiredService<WebscraperService>();
+await webscraper.ScrapeAndProcess();
+
+Console.WriteLine("Bye World!");
 
 public class ContextFactory : IDesignTimeDbContextFactory<Context>
 {
