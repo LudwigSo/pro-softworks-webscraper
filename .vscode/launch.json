@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Docker Compose .NET Core Attach",
+            "name": "docker Driving.Console",
             "type": "coreclr",
             "request": "attach",
-            "processId": "${command:pickProcess}",
+            "processId": "1",
             "preLaunchTask": "Docker Compose Up",
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}",
