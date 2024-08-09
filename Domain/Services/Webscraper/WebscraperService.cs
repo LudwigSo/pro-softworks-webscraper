@@ -16,8 +16,9 @@ public class WebscraperService(IWebscraperPort port, IProjectQueries projectQuer
     public async Task ScrapeAndProcess(ProjectSource source)
     {
         var projects = await _webscraperPort.Scrape(source);
+        Console.WriteLine($"{source}: {projects.Count()} projects found on website");
+
         var activeProjects = await _projectQueries.GetActiveBySource(source);
-        Console.WriteLine($"{source}: {activeProjects.Count()} active projects found");
 
         var removedProjects = activeProjects.Where(p => projects.All(ap => !ap.IsSameProject(p)));
         foreach (var removedProject in removedProjects)
