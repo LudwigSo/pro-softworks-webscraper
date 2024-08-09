@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Docker Compose .NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "preLaunchTask": "Docker Compose Up",
+            "pipeTransport": {
+                "pipeCwd": "${workspaceFolder}",
+                "pipeProgram": "docker",
+                "pipeArgs": [
+                    "exec",
+                    "-i",
+                    "pro-softworks-webscraper-drivingconsole-1",
+                    "bash",
+                    "-c"
+                ],
+                "debuggerPath": "/remote_debugger/vsdbg",
+                "pipeEnv": {
+                    "TERM": "xterm"
+                }
+            },
+            "sourceFileMap": {
+                "/src": "${workspaceFolder}"
+            }
+        }
+    ]
+}
