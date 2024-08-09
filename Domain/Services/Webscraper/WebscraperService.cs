@@ -10,18 +10,27 @@ public class WebscraperService(IWebscraperPort port, IProjectQueries projectQuer
 
     public async Task ScrapeAndProcess()
     {
-        var projects = await _webscraperPort.Scrape(ProjectSource.Hays);
-        var activeProjects = await _projectQueries.GetActiveBySource(ProjectSource.Hays);
+        await ScrapeAndProcess(ProjectSource.Hays);
+    }
+
+    public async Task ScrapeAndProcess(ProjectSource source)
+    {
+        var projects = await _webscraperPort.Scrape(source);
+        var activeProjects = await _projectQueries.GetActiveBySource(source);
+        Console.WriteLine($"{source}: {activeProjects.Count()} active projects found");
 
         var removedProjects = activeProjects.Where(p => projects.All(ap => !ap.IsSameProject(p)));
         foreach (var removedProject in removedProjects)
         {
             removedProject.MarkAsRemoved();
         }
+        Console.WriteLine($"{source}: Remove {removedProjects.Count()} projects");
 
         var newProjects = projects.Where(p => activeProjects.All(ap => !ap.IsSameProject(p)));
         await _unitOfWork.AddRange(newProjects);
+        Console.WriteLine($"{source}: Add {newProjects.Count()} projects");
 
         await _unitOfWork.SaveChangesAsync();
+        Console.WriteLine($"{source}: Persisted changes");
     }
 }
