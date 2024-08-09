@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using System.Diagnostics;
 using Domain;
 using Domain.Services.Webscraper;
 using Driven.Persistence.Postgres;
@@ -10,7 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 Console.WriteLine("Hello World!");
 
-// await Task.Delay(1200000);
+while (!Debugger.IsAttached)
+{
+    Console.WriteLine("Waiting for debugger to attach...");
+    await Task.Delay(100);
+}
+Console.WriteLine("Debugger attached.");
 
 // Setup configuration
 var configuration = new ConfigurationBuilder()
