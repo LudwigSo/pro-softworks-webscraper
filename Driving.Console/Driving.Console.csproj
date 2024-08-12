@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\Driven.Webscraper\Driven.Webscraper.csproj" />
     <ProjectReference Include="..\Driven.Persistence.Postgres\Driven.Persistence.Postgres.csproj" />
+    <ProjectReference Include="..\Application\Application.csproj" />
   </ItemGroup>
   
   <ItemGroup>

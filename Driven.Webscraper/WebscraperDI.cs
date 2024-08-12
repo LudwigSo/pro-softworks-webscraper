@@ -1,4 +1,4 @@
-using Domain.Services.Webscraper;
+using Application.Webscraper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Driven.Webscraper;

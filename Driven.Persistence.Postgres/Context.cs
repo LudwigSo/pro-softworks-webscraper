@@ -10,6 +10,7 @@ public class Context : DbContext
 
     public DbSet<Project> Projects { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Project>(entity =>
