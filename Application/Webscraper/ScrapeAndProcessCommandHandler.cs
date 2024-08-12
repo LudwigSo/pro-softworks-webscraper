@@ -41,7 +41,7 @@ public class ScrapeAndProcessCommandHandler(IWebscraperPort webscraperPort, IRea
 
     internal async Task<List<Project>> GetActiveBySource(ProjectSource source)
     {
-        var query = _readContext.Projects.Where(p => p.Source == source && p.RemovedAt == null);
+        var query = _readContext.Projects.Where(p => p.Source == source && p.IsActive);
         return await _readContext.ToListAsync(query);
     }
 }

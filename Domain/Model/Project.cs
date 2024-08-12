@@ -16,6 +16,7 @@ public class Project
         Description = description;
         JobLocation = jobLocation;
         FirstSeenAt = DateTime.Now;
+        IsActive = true;
     }
 
     public int Id { get; init; }
@@ -27,6 +28,7 @@ public class Project
     public string? JobLocation { get; }
     public DateTime FirstSeenAt { get; }
     public DateTime? RemovedAt { get; private set; }
+    public bool IsActive { get; private set; }
 
     public bool IsCSharp =>
         Description?.Contains("C#") ?? false
@@ -38,8 +40,9 @@ public class Project
 
     public void MarkAsRemoved()
     {
-        if (RemovedAt.HasValue) throw new InvalidOperationException("Project is already removed");
+        if (RemovedAt.HasValue && IsActive == false) throw new InvalidOperationException("Project is already removed");
         RemovedAt = DateTime.Now;
+        IsActive = false;
     }
 
     public bool IsSameProject(Project other)
