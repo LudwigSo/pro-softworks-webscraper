@@ -1,7 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
-using Domain;
-using Domain.Services.Webscraper;
+using Application;
+using Application.Webscraper;
+using Domain.Model;
 using Driven.Persistence.Postgres;
 using Driven.Webscraper;
 using Microsoft.EntityFrameworkCore;
@@ -27,15 +28,15 @@ var configuration = new ConfigurationBuilder()
 // Setup dependency injection
 var serviceCollection = new ServiceCollection()
     .AddPersistencePostgres(configuration)
-    .AddDomainServices()
+    .AddCommandHandlers()
     .AddWebscraper();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
 serviceProvider.GetRequiredService<Context>().Database.Migrate();
 
-var webscraper = serviceProvider.GetRequiredService<WebscraperService>();
-await webscraper.ScrapeAndProcess();
+var scrapeAndProcessCommandHandler = serviceProvider.GetRequiredService<ScrapeAndProcessCommandHandler>();
+await scrapeAndProcessCommandHandler.Handle(new ScrapeAndProcessCommand(ProjectSource.Hays));
 
 Console.WriteLine("Bye World!");
 

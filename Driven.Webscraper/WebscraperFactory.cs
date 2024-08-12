@@ -1,5 +1,5 @@
-﻿using Domain.Model;
-using Domain.Services.Webscraper;
+﻿using Application.Webscraper;
+using Domain.Model;
 
 namespace Driven.Webscraper;
 

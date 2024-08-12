@@ -1,6 +1,4 @@
-using Domain;
-using Domain.Services.Webscraper;
-using Driven.Persistence.Postgres.Queries;
+using Application.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +13,8 @@ public static class PersistencePostgresDI
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
         );
 
-        services.AddScoped<ICrudUnitOfWork, CrudUnitOfWork>();
-        services.AddScoped<IProjectQueries, ProjectQueries>();
+        services.AddScoped<IWriteContext, DbWriteContext>();
+        services.AddScoped<IReadContext, DbReadContext>();
 
         return services;
     }
