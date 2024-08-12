@@ -1,12 +1,12 @@
-using Domain;
+using Application.Ports;
 
 namespace Driven.Persistence.Postgres;
 
-public class CrudUnitOfWork : ICrudUnitOfWork
+public class WriteContext : IWriteContext
 {
     private readonly Context _context;
 
-    public CrudUnitOfWork(Context context)
+    public WriteContext(Context context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
