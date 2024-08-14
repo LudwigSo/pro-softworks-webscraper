@@ -8,7 +8,7 @@ public class Context : DbContext
     public Context() { }
     public Context(DbContextOptions<Context> options) : base(options) { }
 
-    public DbSet<Project> Projects { get; set; }
+    public DbSet<Project> Projects { get; init; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

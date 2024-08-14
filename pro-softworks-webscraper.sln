@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Test", "Application.Test\Application.Test.csproj", "{5919DFDD-0C1E-466D-AFE7-8E6B5B88D7AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driven.Logging", "Driven.Logging\Driven.Logging.csproj", "{F6CBD521-80B8-4F2E-BB83-21EE07133726}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,5 +54,9 @@ Global
 		{5919DFDD-0C1E-466D-AFE7-8E6B5B88D7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5919DFDD-0C1E-466D-AFE7-8E6B5B88D7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5919DFDD-0C1E-466D-AFE7-8E6B5B88D7AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6CBD521-80B8-4F2E-BB83-21EE07133726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6CBD521-80B8-4F2E-BB83-21EE07133726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6CBD521-80B8-4F2E-BB83-21EE07133726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6CBD521-80B8-4F2E-BB83-21EE07133726}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

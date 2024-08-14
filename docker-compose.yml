@@ -18,6 +18,7 @@ services:
       # - BROWSERLESS_URL=http://browserless:3000
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
+      - logs:/app/logs
       # - .:/app
 
   db:
@@ -52,3 +53,4 @@ services:
       #     start_interval: 5s
 volumes:
   postgres_data:
+  logs:

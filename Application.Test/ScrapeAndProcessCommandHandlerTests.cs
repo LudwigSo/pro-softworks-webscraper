@@ -7,7 +7,7 @@ namespace Application.Test;
 
 public class ScrapeAndProcessCommandHandlerTests
 {
-    public Project ProjectFactory(
+    private static Project ProjectFactory(
         ProjectSource source = ProjectSource.Hays,
         string title = "Project 1",
         string url = "http://example.com",
