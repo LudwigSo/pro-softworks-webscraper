@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driven.Webscraper", "Driven
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{2E8E09DE-743E-482A-B6DD-7EACEC439689}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driven.Persistence.Test", "Driven.Persistence.Test\Driven.Persistence.Test.csproj", "{ADFE9681-E365-4F35-8DA4-2F6A9517C574}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Test", "Application.Test\Application.Test.csproj", "{5919DFDD-0C1E-466D-AFE7-8E6B5B88D7AE}"
 EndProject
 Global
