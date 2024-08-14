@@ -16,7 +16,7 @@ public class WebscraperFactory : IWebscraperPort
         return await webscraper.Scrape();
     }
 
-    private IWebscraper CreateWebscraper(ProjectSource source)
+    private static IWebscraper CreateWebscraper(ProjectSource source)
     {
         return source switch
         {

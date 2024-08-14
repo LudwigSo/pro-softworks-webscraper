@@ -6,8 +6,8 @@ namespace Driven.Webscraper;
 
 public class HaysWebscraper : IWebscraper
 {
-    private readonly List<string> _haysSpezialisierungsUrls = new List<string>
-    {
+    private readonly List<string> _haysSpezialisierungsUrls =
+    [
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwarearchitekt/4002EE17-5727-44F8-A5DF-CB51F4D64097/j/Contracting/3/p/1?q=&e=false&pt=false",
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwaretester/5E0C2C71-2260-4C1A-A4CD-62E7FABF0D63/j/Contracting/3/p/1?q=&e=false&pt=false",
@@ -16,7 +16,7 @@ public class HaysWebscraper : IWebscraper
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Cloud-Engineer/4F70CA09-E2E8-4AAC-9B54-5F900246F844/j/Contracting/3/p/1?q=&e=false&pt=false",
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/IT-Berater/B0C4E890-8BCF-4D2A-A5FB-63B26B5C4150/j/Contracting/3/p/1?q=&e=false&pt=false",
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
-    };
+    ];
 
     public async Task<List<Project>> Scrape()
     {
@@ -30,7 +30,7 @@ public class HaysWebscraper : IWebscraper
         return projects;
     }
 
-    private async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
+    private static async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
     {
         var webLoader = new HtmlWeb();
         var mainPage = await webLoader.LoadFromWebAsync(spezialisierungUrl);
@@ -55,35 +55,32 @@ public class HaysWebscraper : IWebscraper
         return projects;
     }
 
-    private string GetCompleteUrl(string spezialisierungsUrl, int page = 1)
+    private static string GetCompleteUrl(string spezialisierungsUrl, int page = 1)
     {
         return $"{spezialisierungsUrl}/j/Contracting/3/p/{page}?q=&e=false&pt=false";
     }
 
-    private string GetUrl(int page = 1)
-    {
-        return $"https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/j/Contracting/3/p/{page}?q=&e=false&pt=false";
-    }
-
-    private int GetNumberOfProjects(HtmlDocument projectMainSite)
+    private static int GetNumberOfProjects(HtmlDocument projectMainSite)
     {
         var numberOfEntriesDiv = projectMainSite.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
         var numberOfEntriesText = numberOfEntriesDiv.InnerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
         return int.Parse(numberOfEntriesText);
     }
 
-    private List<string> GetProjectUrls(HtmlDocument searchSite)
+    private static List<string> GetProjectUrls(HtmlDocument searchSite)
     {
         var projectUrls = searchSite.DocumentNode.SelectNodes("//a[@class='search__result__header__a']");
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToList();
     }
 
-    private Project ScrapeProject(string projectUrl)
+    private static Project ScrapeProject(string projectUrl)
     {
         var webLoader = new HtmlWeb();
         var projectSite = webLoader.Load(projectUrl);
+        Console.WriteLine($"Scraping {projectUrl}");
 
         var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
+        Console.WriteLine($"ProejectScript {projectScript}");
 
         var jsonDoc = JsonDocument.Parse(projectScript);
         var title = jsonDoc.RootElement.GetProperty("title").GetString();
