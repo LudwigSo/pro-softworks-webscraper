@@ -24,22 +24,27 @@ public class ScrapeAndProcessCommandHandler(IWebscraperPort webscraperPort, IRea
 
         var activeProjects = await GetActiveBySource(source);
 
-        var removedProjects = activeProjects.Where(p => projects.All(ap => !ap.IsSameProject(p)));
+        var removedProjects = activeProjects
+            .Where(p => projects.All(ap => !ap.IsSameProject(p)))
+            .ToList();
+        
         foreach (var removedProject in removedProjects)
         {
             removedProject.MarkAsRemoved();
         }
-        Console.WriteLine($"{source}: Remove {removedProjects.Count()} projects");
+        Console.WriteLine($"{source}: Remove {removedProjects.Count} projects");
 
-        var newProjects = projects.Where(p => activeProjects.All(ap => !ap.IsSameProject(p)));
+        var newProjects = projects
+            .Where(p => activeProjects.All(ap => !ap.IsSameProject(p)))
+            .ToList();
         await _writeContext.AddRange(newProjects);
-        Console.WriteLine($"{source}: Add {newProjects.Count()} projects");
+        Console.WriteLine($"{source}: Add {newProjects.Count} projects");
 
         await _writeContext.SaveChangesAsync();
         Console.WriteLine($"{source}: Persisted changes");
     }
 
-    internal async Task<List<Project>> GetActiveBySource(ProjectSource source)
+    private async Task<List<Project>> GetActiveBySource(ProjectSource source)
     {
         var query = _readContext.Projects.Where(p => p.Source == source && p.IsActive);
         return await _readContext.ToListAsync(query);

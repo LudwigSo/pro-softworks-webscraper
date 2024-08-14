@@ -2,19 +2,9 @@ using Application.Ports;
 
 namespace Driven.Persistence.Postgres;
 
-public class DbWriteContext : IWriteContext
+public class DbWriteContext(Context context) : IWriteContext
 {
-    private readonly Context _context;
-
-    public DbWriteContext(Context context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
-    public async Task<T?> Find<T>(object[] primaryKey) where T : class
-    {
-        return await _context.FindAsync<T>(primaryKey);
-    }
+    private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 
     public async Task AddRange<T>(IEnumerable<T> projects) where T : class
     {

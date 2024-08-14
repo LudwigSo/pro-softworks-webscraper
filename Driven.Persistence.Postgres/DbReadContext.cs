@@ -4,14 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Driven.Persistence.Postgres;
 
-public class DbReadContext : IReadContext
+public class DbReadContext(Context context) : IReadContext
 {
-    private readonly Context _context;
-
-    public DbReadContext(Context context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 
     public IQueryable<Project> Projects => _context.Projects;
 

@@ -3,21 +3,14 @@ using System.Diagnostics;
 using Application;
 using Application.Webscraper;
 using Domain.Model;
+using Domain.Ports;
+using Driven.Logging;
 using Driven.Persistence.Postgres;
 using Driven.Webscraper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-Console.WriteLine("Hello World!");
-
-while (!Debugger.IsAttached)
-{
-    Console.WriteLine("Waiting for debugger to attach...");
-    await Task.Delay(100);
-}
-Console.WriteLine("Debugger attached.");
 
 // Setup configuration
 var configuration = new ConfigurationBuilder()
@@ -29,16 +22,27 @@ var configuration = new ConfigurationBuilder()
 var serviceCollection = new ServiceCollection()
     .AddPersistencePostgres(configuration)
     .AddCommandHandlers()
-    .AddWebscraper();
+    .AddWebscraper()
+    .AddLogger();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
+var logger = serviceProvider.GetRequiredService<ILogger>();
+
+#if DEBUG
+while (!Debugger.IsAttached)
+{
+    logger.LogInformation("Waiting for debugger to attach...");
+    await Task.Delay(100);
+}
+logger.LogInformation("Debugger attached.");
+#endif
+
 serviceProvider.GetRequiredService<Context>().Database.Migrate();
+logger.LogInformation("Database migrated.");
 
 var scrapeAndProcessCommandHandler = serviceProvider.GetRequiredService<ScrapeAndProcessCommandHandler>();
 await scrapeAndProcessCommandHandler.Handle(new ScrapeAndProcessCommand(ProjectSource.Hays));
-
-Console.WriteLine("Bye World!");
 
 public class ContextFactory : IDesignTimeDbContextFactory<Context>
 {
