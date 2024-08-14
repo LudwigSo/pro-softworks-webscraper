@@ -1,11 +1,14 @@
 using System.Text.Json;
 using Domain.Model;
+using Domain.Ports;
 using HtmlAgilityPack;
 
 namespace Driven.Webscraper;
 
-public class HaysWebscraper : IWebscraper
+public class HaysWebscraper(ILogger logger) : IWebscraper
 {
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    
     private readonly List<string> _haysSpezialisierungsUrls =
     [
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
@@ -30,7 +33,7 @@ public class HaysWebscraper : IWebscraper
         return projects;
     }
 
-    private static async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
+    private async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
     {
         var webLoader = new HtmlWeb();
         var mainPage = await webLoader.LoadFromWebAsync(spezialisierungUrl);
@@ -73,14 +76,14 @@ public class HaysWebscraper : IWebscraper
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToList();
     }
 
-    private static Project ScrapeProject(string projectUrl)
+    private Project ScrapeProject(string projectUrl)
     {
         var webLoader = new HtmlWeb();
         var projectSite = webLoader.Load(projectUrl);
-        Console.WriteLine($"Scraping {projectUrl}");
+        _logger.LogInformation($"Scraping {projectUrl}");
 
         var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
-        Console.WriteLine($"ProejectScript {projectScript}");
+        _logger.LogInformation($"ProjectScript {projectScript}");
 
         var jsonDoc = JsonDocument.Parse(projectScript);
         var title = jsonDoc.RootElement.GetProperty("title").GetString();
