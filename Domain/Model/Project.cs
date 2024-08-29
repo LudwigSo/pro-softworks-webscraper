@@ -23,6 +23,27 @@ public class Project(
     public DateTime FirstSeenAt { get; } = DateTime.Now;
     public DateTime? RemovedAt { get; private set; }
     public bool IsActive { get; private set; } = true;
+    public List<Tag> Tags { get; } = new();
+
+    public void EvaluateAndAddTags(List<Tag> tags)
+    {
+        var existingTags = Tags.Select(t => t.Id).ToArray();
+        foreach (var tag in tags)
+        {
+            if (existingTags.Contains(tag.Id)) continue;
+            if (TagIsApplicable(tag))
+            {
+                Tags.Add(tag);
+            }
+        }
+    }
+    
+    private bool TagIsApplicable(Tag tag)
+    {
+        if (Title.Contains(tag.Name, StringComparison.OrdinalIgnoreCase)) return true;
+        if (Description?.Contains(tag.Name, StringComparison.OrdinalIgnoreCase) ?? false) return true;
+        return false;
+    }
 
     public void MarkAsRemoved()
     {
