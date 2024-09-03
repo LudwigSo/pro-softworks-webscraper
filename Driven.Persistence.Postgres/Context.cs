@@ -24,6 +24,8 @@ public class Context : DbContext
             entity.Property(e => e.JobLocation).HasMaxLength(200);
             entity.Property(e => e.FirstSeenAt).HasColumnType("timestamp").IsRequired();
             entity.Property(e => e.RemovedAt).HasColumnType("timestamp");
+            
+            entity.Ignore(e => e.Tags);
         });
     }
 }
