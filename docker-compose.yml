@@ -1,9 +1,9 @@
 services:
-  drivingconsole:
-    image: drivingconsole
+  drivingservice:
+    image: drivingservice
     build:
       context: .
-      dockerfile: Driving.Console/Dockerfile
+      dockerfile: Driving.Service/Dockerfile
       args:
         - configuration=Debug
     depends_on:
