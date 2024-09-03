@@ -27,3 +27,4 @@ msbuild.err
 msbuild.wrn
 
 *.idea/
+/.vs
