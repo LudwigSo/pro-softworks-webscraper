@@ -10,12 +10,14 @@ public class ScrapeAndProcessCommandHandler(
     IWebscraperPort webscraperPort, 
     IReadContext readContext, 
     IWriteContext writeContext,
+    IRealtimeMessagesPort realtimeMessagesPort,
     ILogger logger
     )
 {
     private readonly IWebscraperPort _webscraperPort = webscraperPort ?? throw new ArgumentNullException(nameof(webscraperPort));
     private readonly IReadContext _readContext = readContext ?? throw new ArgumentNullException(nameof(readContext));
     private readonly IWriteContext _writeContext = writeContext ?? throw new ArgumentNullException(nameof(writeContext));
+    private readonly IRealtimeMessagesPort _realtimeMessagesPort = realtimeMessagesPort ?? throw new ArgumentNullException(nameof(realtimeMessagesPort));
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
 
@@ -49,6 +51,10 @@ public class ScrapeAndProcessCommandHandler(
 
         await _writeContext.SaveChangesAsync();
         _logger.LogInformation($"{source}: Persisted changes");
+        
+        await _realtimeMessagesPort.NewProjectsAdded(newProjects);
+        await _realtimeMessagesPort.ProjectsRemoved(removedProjects);
+        _logger.LogInformation($"{source}: Project changes (added/removed) published");
     }
 
     private async Task<List<Project>> GetActiveBySource(ProjectSource source)

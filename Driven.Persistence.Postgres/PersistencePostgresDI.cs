@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Driven.Persistence.Postgres;
 
-public static class PersistencePostgresDI
+public static class PersistencePostgresDi
 {
     public static IServiceCollection AddPersistencePostgres(this IServiceCollection services, IConfiguration configuration)
     {

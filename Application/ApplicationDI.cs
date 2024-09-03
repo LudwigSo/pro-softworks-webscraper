@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
 
-public static class DomainDI
+public static class ApplicationDi
 {
     public static IServiceCollection AddCommandHandlers(this IServiceCollection services)
     {
