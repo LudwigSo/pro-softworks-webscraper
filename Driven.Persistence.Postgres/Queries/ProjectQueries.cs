@@ -1,5 +1,4 @@
-﻿using Application.Ports;
-using Domain.Model;
+﻿using Domain.Model;
 using Domain.Ports;
 using Microsoft.EntityFrameworkCore;
 

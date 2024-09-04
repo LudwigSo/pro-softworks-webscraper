@@ -1,5 +1,4 @@
-﻿using Application.Webscraper;
-using Domain.Model;
+﻿using Domain.Model;
 using Domain.Ports;
 
 namespace Driven.Webscraper;
