@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Diagnostics;
-using Application;
-using Application.Webscraper;
+using Domain;
+using Domain.CommandHandlers;
 using Domain.Model;
 using Domain.Ports;
 using Driven.Logging;
@@ -21,7 +21,7 @@ var configuration = new ConfigurationBuilder()
 // Setup dependency injection
 var serviceCollection = new ServiceCollection()
     .AddPersistencePostgres(configuration)
-    .AddCommandHandlers()
+    .AddDomainServices()
     .AddWebscraper()
     .AddLogger();
 
