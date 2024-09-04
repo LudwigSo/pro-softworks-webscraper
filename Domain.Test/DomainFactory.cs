@@ -1,6 +1,6 @@
 ﻿using Domain.Model;
 
-namespace Application.Test;
+namespace Domain.Test;
 
 public static class DomainFactory
 {
