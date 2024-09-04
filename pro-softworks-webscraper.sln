@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Persistence.Postgres
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Webscraper", "Driven.Webscraper\Driven.Webscraper.csproj", "{8FE3C3CA-703F-4EE0-A65D-FF3232CA7BC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Logging", "Driven.Logging\Driven.Logging.csproj", "{F6CBD521-80B8-4F2E-BB83-21EE07133726}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Logging.Serilog", "Driven.Logging.Serilog\Driven.Logging.Serilog.csproj", "{F6CBD521-80B8-4F2E-BB83-21EE07133726}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driving.Service", "Driving.Service\Driving.Service.csproj", "{A4351D3C-24CE-4A07-8CC8-9C50D592F710}"
 EndProject

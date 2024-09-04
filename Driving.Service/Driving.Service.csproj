@@ -24,8 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Application\Application.csproj" />
-      <ProjectReference Include="..\Driven.Logging\Driven.Logging.csproj" />
+      <ProjectReference Include="..\Driven.Logging.Serilog\Driven.Logging.Serilog.csproj" />
       <ProjectReference Include="..\Driven.Persistence.Postgres\Driven.Persistence.Postgres.csproj" />
       <ProjectReference Include="..\Driven.RealtimeMessages.SignalR\Driven.RealtimeMessages.SignalR.csproj" />
       <ProjectReference Include="..\Driven.Webscraper\Driven.Webscraper.csproj" />

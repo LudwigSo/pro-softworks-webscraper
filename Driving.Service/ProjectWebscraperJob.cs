@@ -1,5 +1,4 @@
-﻿using Application.Webscraper;
-using Domain.CommandHandlers;
+﻿using Domain.CommandHandlers;
 using Domain.Model;
 using Quartz;
 
