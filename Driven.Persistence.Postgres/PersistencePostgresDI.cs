@@ -1,4 +1,3 @@
-using Application.Ports;
 using Domain.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
