@@ -1,4 +1,5 @@
 using Application.Ports;
+using Domain.Ports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,6 @@ public static class PersistencePostgresDi
         );
 
         services.AddScoped<IWriteContext, DbWriteContext>();
-        services.AddScoped<IReadContext, DbReadContext>();
 
         return services;
     }

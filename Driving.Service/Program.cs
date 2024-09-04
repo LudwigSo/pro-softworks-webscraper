@@ -1,4 +1,4 @@
-using Application;
+using Domain;
 using Driven.Logging;
 using Driven.Persistence.Postgres;
 using Driven.RealtimeMessages.SignalR;
@@ -18,7 +18,7 @@ var configuration = new ConfigurationBuilder()
 builder = builder.ConfigureServices((context, services) =>
 {
     services.AddPersistencePostgres(configuration)
-        .AddCommandHandlers()
+        .AddDomainServices()
         .AddWebscraper()
         .AddLogger()
         .AddServiceQuartz();

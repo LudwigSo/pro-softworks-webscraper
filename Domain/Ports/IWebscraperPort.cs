@@ -1,6 +1,6 @@
 using Domain.Model;
 
-namespace Application.Webscraper;
+namespace Domain.Ports;
 
 public interface IWebscraperPort
 {

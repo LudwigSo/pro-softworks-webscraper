@@ -1,6 +1,6 @@
 ﻿using Domain.Model;
 
-namespace Application.Ports;
+namespace Domain.Ports;
 
 public interface IRealtimeMessagesPort
 {

@@ -1,4 +1,5 @@
 using Application.Webscraper;
+using Domain.Ports;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Driven.Webscraper;

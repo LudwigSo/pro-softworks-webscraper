@@ -1,20 +1,19 @@
-using Application.Ports;
-using Application.Webscraper;
-using Domain.Model;
 using Domain.Ports;
+using Domain.Model;
 using FakeItEasy;
+using Domain.CommandHandlers;
 
-namespace Application.Test;
+namespace Domain.Test;
 
 public class ScrapeAndProcessCommandHandlerTests
 {
-    
+
 
     [Fact]
     public async Task Test1()
     {
         // Arrange
-        var projects = new List<Project>
+        var scrapedProjects = new List<Project>
         {
             DomainFactory.NewProject(title: "Project 1", projectIdentifier: "123"),
             DomainFactory.NewProject(title: "Project 2", projectIdentifier: "234"),
@@ -24,12 +23,13 @@ public class ScrapeAndProcessCommandHandlerTests
         var fakeLogger = A.Fake<ILogger>();
         var fakeSignalR = A.Fake<IRealtimeMessagesPort>();
         var fakeWriteContext = A.Fake<IWriteContext>();
-        var fakeReadContext = FakeFactory.NewReadContext();
+        var fakeProjectQueries = A.Fake<IProjectQueriesPort>();
+        A.CallTo(() => fakeProjectQueries.GetActiveBySource(ProjectSource.Hays)).Returns([]);
 
         var fakeWebscraperPort = A.Fake<IWebscraperPort>();
-        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).Returns(projects);
+        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).Returns(scrapedProjects);
 
-        var handler = new ScrapeAndProcessCommandHandler(fakeWebscraperPort, fakeReadContext, fakeWriteContext, fakeSignalR, fakeLogger);
+        var handler = new ScrapeAndProcessCommandHandler(fakeWebscraperPort, fakeProjectQueries, fakeWriteContext, fakeSignalR, fakeLogger);
         var command = new ScrapeAndProcessCommand(ProjectSource.Hays);
 
         // Act
@@ -37,8 +37,8 @@ public class ScrapeAndProcessCommandHandlerTests
 
         // Assert
         A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => fakeWriteContext.AddRange(projects)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => fakeWriteContext.AddRange(scrapedProjects)).MustHaveHappenedOnceExactly();
         A.CallTo(() => fakeWriteContext.SaveChangesAsync()).MustHaveHappenedOnceExactly();
-        A.CallTo(() => fakeSignalR.NewProjectsAdded(projects)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => fakeSignalR.NewProjectsAdded(scrapedProjects)).MustHaveHappenedOnceExactly();
     }
 }
