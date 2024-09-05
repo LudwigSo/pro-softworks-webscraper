@@ -1,5 +1,5 @@
 using Domain;
-using Driven.Logging;
+using Driven.Logging.Serilog;
 using Driven.Persistence.Postgres;
 using Driven.RealtimeMessages.SignalR;
 using Driven.Webscraper;
@@ -20,7 +20,7 @@ builder = builder.ConfigureServices((context, services) =>
     services.AddPersistencePostgres(configuration)
         .AddDomainServices()
         .AddWebscraper()
-        .AddLogger()
+        .AddLoggingSerilog()
         .AddServiceQuartz();
 });
 

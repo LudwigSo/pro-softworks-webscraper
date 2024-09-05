@@ -25,7 +25,7 @@ public class Project(
     public bool IsActive { get; private set; } = true;
     public List<Tag> Tags { get; } = new();
 
-    public void EvaluateAndAddTags(List<Tag> tags)
+    internal void EvaluateAndAddTags(List<Tag> tags)
     {
         var existingTags = Tags.Select(t => t.Id).ToArray();
         foreach (var tag in tags)
@@ -45,14 +45,14 @@ public class Project(
         return false;
     }
 
-    public void MarkAsRemoved()
+    internal void MarkAsRemoved()
     {
         if (RemovedAt.HasValue && IsActive == false) throw new InvalidOperationException("Project is already removed");
         RemovedAt = DateTime.Now;
         IsActive = false;
     }
 
-    public bool IsSameProject(Project other)
+    internal bool IsSameProject(Project other)
     {
         if (Source != other.Source) return false;
         if (ProjectIdentifier != other.ProjectIdentifier) return false;

@@ -1,11 +1,11 @@
 using Domain.Ports;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Driven.Logging;
+namespace Driven.Logging.Serilog;
 
-public static class WebscraperDi
+public static class LoggingSerilogDi
 {
-    public static IServiceCollection AddLogger(this IServiceCollection services)
+    public static IServiceCollection AddLoggingSerilog(this IServiceCollection services)
     {
         services.AddScoped<ILogger, SerilogLogger>();
 

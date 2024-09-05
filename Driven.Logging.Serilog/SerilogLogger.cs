@@ -1,7 +1,7 @@
 using Serilog;
 using Serilog.Core;
 
-namespace Driven.Logging;
+namespace Driven.Logging.Serilog;
 
 public class SerilogLogger : Domain.Ports.ILogger
 {

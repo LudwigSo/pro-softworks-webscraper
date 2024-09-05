@@ -18,6 +18,24 @@ services:
       - ~/.vsdbg:/remote_debugger:rw
       - logs:/app/logs
       # - .:/app
+  
+  drivingapi:
+    image: drivingapi
+    build:
+      context: .
+      dockerfile: Driving.Api/Dockerfile
+      args:
+        - configuration=Debug
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword;
+    ports:
+      - "8080:8080"
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+      - logs:/app/logs
 
   db:
     image: postgres:latest
