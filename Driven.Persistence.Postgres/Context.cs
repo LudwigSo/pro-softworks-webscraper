@@ -24,8 +24,20 @@ public class Context : DbContext
             entity.Property(e => e.JobLocation).HasMaxLength(200);
             entity.Property(e => e.FirstSeenAt).HasColumnType("timestamp").IsRequired();
             entity.Property(e => e.RemovedAt).HasColumnType("timestamp");
-            
-            entity.Ignore(e => e.Tags);
+
+            entity.HasMany(e => e.Tags)
+                .WithMany()
+                .UsingEntity(
+                    "Project_Tag",
+                    l => l.HasOne(typeof(Tag)).WithMany().HasForeignKey("TagId"),
+                    r => r.HasOne(typeof(Project)).WithMany().HasForeignKey("ProjectId")
+            );
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
         });
     }
 }
