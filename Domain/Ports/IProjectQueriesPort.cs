@@ -4,6 +4,7 @@ namespace Domain.Ports
 {
     public interface IProjectQueriesPort
     {
-        Task<List<Project>> GetActiveBySource(ProjectSource source);
+        Task<Project[]> GetActiveBySource(ProjectSource source);
+        Task<Project[]> GetActive();
     }
 }

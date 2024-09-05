@@ -1,13 +1,14 @@
 {
   "profiles": {
-    "dc service": {
+    "DockerCompose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
-      "composeLaunchAction": "None",
-      "composeLaunchServiceName": "drivingservice",
-      "projectName": "pro-softworks-webscraper-2",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "drivingapi",
+      "composeLaunchUrl": "http://localhost:8080/index.html",
       "serviceActions": {
         "db": "StartWithoutDebugging",
+        "drivingapi": "StartDebugging",
         "drivingservice": "StartDebugging"
       }
     }
