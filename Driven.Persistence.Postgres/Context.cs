@@ -9,13 +9,16 @@ public class Context : DbContext
     public Context(DbContextOptions<Context> options) : base(options) { }
 
     public DbSet<Project> Projects { get; init; }
+    public DbSet<Tag> Tags { get; init; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Project>(entity =>
         {
+            entity.ToTable("Project");
             entity.HasKey(e => e.Id);
+
             entity.Property(e => e.Title).HasMaxLength(500).IsRequired();
             entity.Property(e => e.Url).IsRequired();
             entity.Property(e => e.Source).IsRequired();
@@ -36,7 +39,9 @@ public class Context : DbContext
 
         modelBuilder.Entity<Tag>(entity =>
         {
+            entity.ToTable("Tag");
             entity.HasKey(e => e.Id);
+
             entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
         });
     }

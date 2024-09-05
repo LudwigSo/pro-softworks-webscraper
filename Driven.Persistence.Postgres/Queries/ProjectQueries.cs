@@ -13,5 +13,14 @@ namespace Driven.Persistence.Postgres.Queries
 
         public Task<Project[]> GetActive()
             => _context.Projects.Where(x => x.RemovedAt == null).ToArrayAsync();
+
+        public Task<Project[]> GetAll(int page, int skipPerPage, int take)
+            => _context.Projects.OrderBy(p => p.Id).Skip(page * skipPerPage).Take(take).ToArrayAsync();
+
+        public Task<int> GetProjectCount()
+            => _context.Projects.CountAsync();
+
+        public Task<Tag[]> GetAllTags()
+            => _context.Tags.ToArrayAsync();
     }
 }

@@ -25,7 +25,13 @@ public class Project(
     public bool IsActive { get; private set; } = true;
     public List<Tag> Tags { get; } = new();
 
-    internal void EvaluateAndAddTags(List<Tag> tags)
+    internal void ReTag(Tag[] tags)
+    {
+        Tags.Clear();
+        EvaluateAndAddTags(tags);
+    }
+
+    internal void EvaluateAndAddTags(Tag[] tags)
     {
         var existingTags = Tags.Select(t => t.Id).ToArray();
         foreach (var tag in tags)
