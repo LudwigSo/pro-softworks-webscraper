@@ -47,8 +47,8 @@ public class ScrapeAndProcessCommandHandler(
         await _writeContext.SaveChangesAsync();
         _logger.LogInformation($"{command.Source}: Persisted changes");
 
-        await _realtimeMessagesPort.NewProjectsAdded(newProjects);
-        await _realtimeMessagesPort.ProjectsRemoved(removedProjects);
+        await _realtimeMessagesPort.NewProjectsAdded(newProjects.Where(p => p.Tags.Count > 0));
+        await _realtimeMessagesPort.ProjectsRemoved(removedProjects.Where(p => p.Tags.Count > 0));
         _logger.LogInformation($"{command.Source}: Project changes (added/removed) published");
     }
 }
