@@ -4,6 +4,6 @@ namespace Domain.Ports;
 
 public interface IRealtimeMessagesPort
 {
-    Task NewProjectsAdded(List<Project> projects);
-    Task ProjectsRemoved(List<Project> projects);
+    Task NewProjectsAdded(IEnumerable<Project> projects);
+    Task ProjectsRemoved(IEnumerable<Project> projects);
 }
