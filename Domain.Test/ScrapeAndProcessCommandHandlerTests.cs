@@ -2,6 +2,7 @@ using Domain.Ports;
 using Domain.Model;
 using FakeItEasy;
 using Domain.CommandHandlers;
+using Domain.Ports.Queries;
 
 namespace Domain.Test;
 
@@ -29,7 +30,7 @@ public class ScrapeAndProcessCommandHandlerTests
         var fakeWebscraperPort = A.Fake<IWebscraperPort>();
         A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).Returns(scrapedProjects);
 
-        var handler = new ScrapeAndProcessCommandHandler(fakeWebscraperPort, fakeProjectQueries, fakeWriteContext, fakeSignalR, fakeLogger);
+        var handler = new ScrapeAndProcessCommandHandler(fakeLogger, fakeWebscraperPort, fakeProjectQueries, fakeWriteContext, fakeSignalR);
         var command = new ScrapeAndProcessCommand(ProjectSource.Hays);
 
         // Act

@@ -1,25 +1,22 @@
 ﻿using Domain.Ports;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Domain.Ports.Queries;
 
 namespace Domain.CommandHandlers
 {
-    public sealed record ReTagCommand();
+    public sealed record RetagCommand();
 
-    public class ReTagCommandHandler(ILogger logger, IProjectQueriesPort projectQueriesPort, IWriteContext writeContext)
+    public class RetagCommandHandler(ILogger logger, IProjectQueriesPort projectQueriesPort, ITagQueriesPort tagQueriesPort, IWriteContext writeContext)
     {
         private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IProjectQueriesPort _projectQueriesPort = projectQueriesPort ?? throw new ArgumentNullException(nameof(projectQueriesPort));
+        private readonly ITagQueriesPort _tagQueriesPort = tagQueriesPort ?? throw new ArgumentNullException(nameof(tagQueriesPort));
         private readonly IWriteContext _writeContext = writeContext ?? throw new ArgumentNullException(nameof(writeContext));
 
-        public async Task Handle(ReTagCommand command)
+        public async Task Handle(RetagCommand command)
         {
             var projectCount = await _projectQueriesPort.GetProjectCount();
             _logger.LogInformation($"Retagging {projectCount} projects");
-            var allTags = await _projectQueriesPort.GetAllTags();
+            var allTags = await _tagQueriesPort.GetAllTags();
 
             var page = 0;
             while (projectCount > 0)

@@ -8,7 +8,9 @@ public static class DomainDi
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
         services.AddScoped<ScrapeAndProcessCommandHandler>();
-        services.AddScoped<ReTagCommandHandler>();
+        services.AddScoped<RetagCommandHandler>();
+        services.AddScoped<CreateTagCommandHandler>();
+        services.AddScoped<DeleteTagCommandHandler>();
 
         return services;
     }
