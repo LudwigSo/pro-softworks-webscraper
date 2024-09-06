@@ -1,5 +1,6 @@
 ﻿using Domain.Model;
 using Domain.Ports;
+using Domain.Ports.Queries;
 
 namespace Domain.CommandHandlers;
 

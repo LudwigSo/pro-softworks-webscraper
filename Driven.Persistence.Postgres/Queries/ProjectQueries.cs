@@ -1,5 +1,5 @@
 ﻿using Domain.Model;
-using Domain.Ports;
+using Domain.Ports.Queries;
 using Microsoft.EntityFrameworkCore;
 
 namespace Driven.Persistence.Postgres.Queries
@@ -9,18 +9,15 @@ namespace Driven.Persistence.Postgres.Queries
         private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 
         public Task<Project[]> GetActiveBySource(ProjectSource source)
-            => _context.Projects.Where(x => x.Source == source && x.RemovedAt == null).ToArrayAsync();
+            => _context.Projects.Include(p => p.Tags).Where(x => x.Source == source && x.RemovedAt == null).ToArrayAsync();
 
-        public Task<Project[]> GetActive()
-            => _context.Projects.Where(x => x.RemovedAt == null).ToArrayAsync();
+        public Task<Project[]> GetActiveWithAnyTag()
+            => _context.Projects.Include(p => p.Tags).Where(x => x.RemovedAt == null && x.Tags.Count != 0).ToArrayAsync();
 
         public Task<Project[]> GetAll(int page, int skipPerPage, int take)
-            => _context.Projects.OrderBy(p => p.Id).Skip(page * skipPerPage).Take(take).ToArrayAsync();
+            => _context.Projects.Include(p => p.Tags).OrderBy(p => p.Id).Skip(page * skipPerPage).Take(take).ToArrayAsync();
 
         public Task<int> GetProjectCount()
             => _context.Projects.CountAsync();
-
-        public Task<Tag[]> GetAllTags()
-            => _context.Tags.ToArrayAsync();
     }
 }

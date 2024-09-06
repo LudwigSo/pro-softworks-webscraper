@@ -12,8 +12,9 @@ public class SerilogLogger : Domain.Ports.ILogger
             rollOnFileSizeLimit: true)
         .CreateLogger();
 
+    public void LogDebug(string message) => _logger.Debug(message);
+    public void LogInformation(string message) => _logger.Information(message);
     public void LogError(string message) => _logger.Error(message);
     public void LogException(Exception exception, string message) => _logger.Fatal(exception, message);
-    public void LogInformation(string message) => _logger.Information(message);
     public void LogWarning(string message) => _logger.Warning(message);
 }

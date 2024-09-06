@@ -87,7 +87,7 @@ public class HaysWebscraper(ILogger logger) : IWebscraper
     {
         var webLoader = new HtmlWeb();
         var projectSite = webLoader.Load(projectUrl);
-        _logger.LogInformation($"Scraping {projectUrl}");
+        _logger.LogDebug($"Scraping {projectUrl}");
 
         var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
 
