@@ -1,10 +1,5 @@
 namespace Domain.Model;
 
-public enum ProjectSource
-{
-    Hays = 0,
-}
-
 public class Project(
     ProjectSource source,
     string title,
