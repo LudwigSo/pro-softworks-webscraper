@@ -22,6 +22,7 @@ public class WebscraperFactory(ILogger logger) : IWebscraperPort
         return source switch
         {
             ProjectSource.Hays => new HaysWebscraper(_logger),
+            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger),
             _ => throw new NotImplementedException()
         };
     }
