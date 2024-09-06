@@ -1,4 +1,5 @@
 using Domain.Ports;
+using Domain.Ports.Queries;
 using Driven.Persistence.Postgres.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ public static class PersistencePostgresDi
 
         services.AddScoped<IWriteContext, DbWriteContext>();
         services.AddScoped<IProjectQueriesPort, ProjectQueries>();
+        services.AddScoped<ITagQueriesPort, TagQueries>();
 
         return services;
     }

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Driven.Webscraper;
 
-public static class WebscraperDI
+public static class WebscraperDi
 {
     public static IServiceCollection AddWebscraper(this IServiceCollection services)
     {
