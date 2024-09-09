@@ -5,12 +5,12 @@ using Domain.Model;
 using Domain.Ports;
 using HtmlAgilityPack;
 
-namespace Driven.Webscraper;
+namespace Driven.Webscraper.Scraper;
 
 public class FreelanceDeWebscraper(ILogger logger) : IWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    
+
     private readonly List<string> _kategorieUrls =
     [
         "https://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Softwareentwicklung-Softwareprogrammierung-Projekte",
@@ -61,7 +61,7 @@ public class FreelanceDeWebscraper(ILogger logger) : IWebscraper
 
     private static string GetCompleteUrl(string kategorieUrl, int page = 1)
     {
-        return $"{kategorieUrl}/?_offset={(page-1)*20}";
+        return $"{kategorieUrl}/?_offset={(page - 1) * 20}";
     }
 
     private static int GetNumberOfProjects(HtmlDocument mainPage)
@@ -93,7 +93,7 @@ public class FreelanceDeWebscraper(ILogger logger) : IWebscraper
         var jobLocation = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Projektort']/parent::li")?.InnerText?.Trim();
         var scriptNodes = projectSite.DocumentNode.SelectNodes("//script[@type='application/ld+json']");
         var description = string.Empty;
-        var descriptionNode = scriptNodes.Where(n => n.InnerText.StartsWith("{\"datePosted")).SingleOrDefault();
+        var descriptionNode = scriptNodes?.Where(n => n.InnerText.StartsWith("{\"datePosted"))?.SingleOrDefault();
         if (descriptionNode != null)
         {
             var descriptionJson = JsonDocument.Parse(descriptionNode.InnerText);

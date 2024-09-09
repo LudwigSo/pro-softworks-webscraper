@@ -1,7 +1,7 @@
 ﻿using Domain.Model;
 using Domain.Ports;
 
-namespace Driven.Webscraper;
+namespace Driven.Webscraper.Scraper;
 
 public interface IWebscraper
 {
