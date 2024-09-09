@@ -3,12 +3,12 @@ using Domain.Model;
 using Domain.Ports;
 using HtmlAgilityPack;
 
-namespace Driven.Webscraper;
+namespace Driven.Webscraper.Scraper;
 
 public class HaysWebscraper(ILogger logger) : IWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    
+
     private readonly List<string> _haysSpezialisierungsUrls =
     [
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
@@ -113,7 +113,7 @@ public class HaysWebscraper(ILogger logger) : IWebscraper
 
         var descriptionString = description.GetString() ?? "".Replace("Der Bereich IT ist unsere Kernkompetenz, auf deren Grundlage sich Hays entwickelt hat. Wir sind das größte privatwirtschaftlich organisierte IT-Personaldienstleistungsunternehmen in Deutschland und haben für jede Karrierestufe das passende Angebot – egal ob Sie an Vakanzen in agilen KMUs oder starken DAX-Konzernen interessiert sind. Wir beherrschen die komplette IT-Klaviatur von Support bis zur Softwarearchitektur oder Digitalisierung – dank unseres umfangreichen Portfolios ist für jeden etwas dabei. So konnten wir in den vergangenen Jahrzehnten im Rahmen einer Life-Long-Partnerschaft unzählige Fach- und Führungskräfte aus der IT dabei unterstützen, die Weichen für eine erfolgreiche Karriere zu stellen. Unser Beratungsteam ist spezialisiert und somit in der Lage, auf Ihre Wünsche und Vorstellungen einzugehen und Sie auf Bewerbungsgespräche und Vertragsverhandlungen bestens vorzubereiten. Probieren Sie es aus und erfahren Sie, was der Markt Ihnen zu bieten hat – völlig kostenfrei, diskret und unverbindlich! Wir freuen uns auf Sie.", "");
         var jobLocationString = $"{jobLocationType.GetString() ?? ""}, {jobLocationAddressCountry.GetString() ?? ""}, {jobLocationAddressPostalCode.GetString() ?? ""}, {jobLocationAddressLocality.GetString() ?? ""}";
-        
+
         var project = new Project(
             ProjectSource.Hays,
             title,
