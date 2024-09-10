@@ -1,8 +1,7 @@
 using Domain.Ports;
-using Driven.Webscraper.Test;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Driven.Webscraper;
+namespace Driven.Webscraper.Test;
 
 public static class WebscraperDi
 {

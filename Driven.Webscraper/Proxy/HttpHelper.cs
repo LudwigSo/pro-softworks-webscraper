@@ -24,7 +24,8 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
         }
         catch (Exception e)
         {
-            proxyData.IncrementFails();
+            await proxyData.IncrementFails();
+            _logger.LogInformation($"Failed getting page ({proxyData.Fails}) with {proxyData.Ip}:{proxyData.Port} from {url}");
             if (tryNumber < 20)
             {
                 return await Get(url, null, tryNumber + 1);
@@ -55,7 +56,8 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
         }
         catch (Exception e)
         {
-            httpClientAndProxy.Value.proxyData.IncrementFails();
+            await httpClientAndProxy.Value.proxyData.IncrementFails();
+            _logger.LogInformation($"Failed getting html ({httpClientAndProxy.Value.proxyData.Fails}) with {httpClientAndProxy.Value.proxyData.Ip}:{httpClientAndProxy.Value.proxyData.Port} from {url}");
             if (tryNumber < 20)
             {
                 return await GetHtml(url, null, tryNumber + 1);

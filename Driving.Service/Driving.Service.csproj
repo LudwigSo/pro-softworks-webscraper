@@ -31,6 +31,7 @@
       <ProjectReference Include="..\Driven.Logging.Serilog\Driven.Logging.Serilog.csproj" />
       <ProjectReference Include="..\Driven.Persistence.Postgres\Driven.Persistence.Postgres.csproj" />
       <ProjectReference Include="..\Driven.RealtimeMessages.SignalR\Driven.RealtimeMessages.SignalR.csproj" />
+      <ProjectReference Include="..\Driven.Webscraper.Test\Driven.Webscraper.Test.csproj" />
       <ProjectReference Include="..\Driven.Webscraper\Driven.Webscraper.csproj" />
     </ItemGroup>
 </Project>
