@@ -28,4 +28,28 @@ internal static class ServiceQuartzDi
         });
         return services;
     }
+
+    internal static IServiceCollection AddServiceQuartzForDebugging(this IServiceCollection services)
+    {
+        services.AddScoped<HaysWebscraperJob>();
+        services.AddScoped<FreelanceDeWebscraperJob>();
+        services.AddQuartz(config =>
+        {
+            config.ScheduleJob<HaysWebscraperJob>(trigger =>
+                trigger
+                    .WithIdentity("HaysWebscraperJob")
+                    .WithCronSchedule("0 */1 * * * ?")
+            );
+            config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
+                trigger
+                    .WithIdentity("FreelanceDeWebscraperJob")
+                    .WithCronSchedule("0 */2 * * * ?")
+            );
+        });
+        services.AddQuartzHostedService(opt =>
+        {
+            opt.WaitForJobsToComplete = true;
+        });
+        return services;
+    }
 }
