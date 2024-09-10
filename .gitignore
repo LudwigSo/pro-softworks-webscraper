@@ -28,3 +28,4 @@ msbuild.wrn
 
 *.idea/
 /.vs
+/Driving.Service/ProxyscrapeLoader.json

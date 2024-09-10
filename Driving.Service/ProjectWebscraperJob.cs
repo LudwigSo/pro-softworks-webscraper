@@ -10,6 +10,13 @@ internal class HaysWebscraperJob(ScrapeAndProcessCommandHandler scrapeAndProcess
     protected override ProjectSource Source { get; } = ProjectSource.Hays;
 }
 
+internal class FreelanceDeWebscraperJob(ScrapeAndProcessCommandHandler scrapeAndProcessCommandHandler)
+    : ProjectWebscraperJob(scrapeAndProcessCommandHandler)
+{
+    protected override ProjectSource Source { get; } = ProjectSource.FreelanceDe;
+}
+
+
 internal abstract class ProjectWebscraperJob(ScrapeAndProcessCommandHandler scrapeAndProcessCommandHandler)
     : IJob
 {
