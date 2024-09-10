@@ -34,20 +34,20 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         var (numberOfEntries, mainPage) = await GetNumberOfProjects(kategorieUrl);
         var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
 
-        var projects = new List<Project>();
-        for(var i = 0; i < numberOfPages; i++)
-        {
-            projects.AddRange(await ScrapeProjectSearchResults(kategorieUrl, mainPage, i));
-        }
-        return projects;
-        //var projectsScrapeTasks = new List<Task<List<Project>>>();
-        //for (var i = 0; i < numberOfPages; i++) 
+        //var projects = new List<Project>();
+        //for(var i = 0; i < numberOfPages; i++)
         //{
-        //    projectsScrapeTasks.Add(ScrapeProjectSearchResults(kategorieUrl, mainPage, i));
+        //    projects.AddRange(await ScrapeProjectSearchResults(kategorieUrl, mainPage, i));
         //}
-        //Task.WaitAll(projectsScrapeTasks.ToArray());
+        //return projects;
+        var projectsScrapeTasks = new List<Task<List<Project>>>();
+        for (var i = 0; i < numberOfPages; i++)
+        {
+            projectsScrapeTasks.Add(ScrapeProjectSearchResults(kategorieUrl, mainPage, i));
+        }
+        Task.WaitAll([.. projectsScrapeTasks]);
 
-        //return projectsScrapeTasks.SelectMany(t => t.Result).ToList();
+        return projectsScrapeTasks.SelectMany(t => t.Result).ToList();
     }
 
     private async Task<List<Project>> ScrapeProjectSearchResults(string kategorieUrl, HtmlDocument mainPage, int page = 0)
@@ -63,12 +63,15 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         {
             try
             {
-                var project = await ScrapeProject("https://www.freelance.de" + projectUrl);
+                _logger.LogInformation($"Scraping {projectUrl}");
+                var project = await ScrapeProject("http://www.freelance.de" + projectUrl);
                 projects.Add(project);
+                _logger.LogInformation($"Success scraping project {projectUrl}");
+
             }
-            catch (Exception e)
+            catch
             {
-                _logger.LogException(e, $"Error scraping project {projectUrl}");
+                _logger.LogInformation($"Error scraping project {projectUrl}");
             }
         }
         return projects;
@@ -117,40 +120,47 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
-    private async Task<Project> ScrapeProject(string projectUrl)
+    private async Task<Project> ScrapeProject(string projectUrl, int retry = 0)
     {
-        var webLoader = new HtmlWeb();
-        var projectSite = await webLoader.LoadFromWebAsync(projectUrl);
-        _logger.LogInformation($"Scraping {projectUrl}");
-
-        var title = projectSite.DocumentNode.SelectSingleNode("//h1").InnerText;
-        var identifier = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Referenz-Nummer']/parent::li")?.InnerText?.Trim();
-        var jobLocation = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Projektort']/parent::li")?.InnerText?.Trim();
-        var scriptNodes = projectSite.DocumentNode.SelectNodes("//script[@type='application/ld+json']");
-        var description = string.Empty;
-        var descriptionNode = scriptNodes.SingleOrDefault(n => n.InnerText.StartsWith("{\"datePosted"));
-        if (descriptionNode != null)
+        try
         {
-            var descriptionJson = JsonDocument.Parse(descriptionNode.InnerText);
-            description = descriptionJson.RootElement.GetProperty("description").GetString();
+            var projectSite = await _httpHelper.GetHtml(projectUrl);
+
+            var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText;
+            var identifier = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Referenz-Nummer']/parent::li")?.InnerText?.Trim();
+            var jobLocation = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Projektort']/parent::li")?.InnerText?.Trim();
+            var scriptNodes = projectSite.DocumentNode.SelectNodes("//script[@type='application/ld+json']");
+            var description = string.Empty;
+            var descriptionNode = scriptNodes.SingleOrDefault(n => n.InnerText.StartsWith("{\"datePosted"));
+            if (descriptionNode != null)
+            {
+                var descriptionJson = JsonDocument.Parse(descriptionNode.InnerText);
+                description = descriptionJson.RootElement.GetProperty("description").GetString();
+            }
+            else
+            {
+                description = projectSite.DocumentNode.SelectSingleNode("//div[@class='panel-body highlight-text']").InnerText.Trim();
+            }
+
+            if (description == string.Empty) throw new InvalidOperationException($"Description is empty, url: {projectUrl}");
+
+
+            var project = new Project(
+                ProjectSource.FreelanceDe,
+                title,
+                projectUrl,
+                identifier,
+                description,
+                jobLocation
+            );
+
+            return project;
         }
-        else
+        catch
         {
-            description = projectSite.DocumentNode.SelectSingleNode("//div[@class='panel-body highlight-text']").InnerText.Trim();
+            if (retry > 5) throw;
+            return await ScrapeProject(projectUrl, retry + 1);
         }
-
-        if (description == string.Empty) throw new InvalidOperationException($"Description is empty, url: {projectUrl}");
-
-
-        var project = new Project(
-            ProjectSource.FreelanceDe,
-            title,
-            projectUrl,
-            identifier,
-            description,
-            jobLocation
-        );
-
-        return project;
+        
     }
 }

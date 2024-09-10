@@ -14,7 +14,7 @@ public class HttpClientFactory(IProxyLoader proxyLoader)
         if (_proxies.Length == 0) _proxies = await _proxyLoader.LoadAvailableProxies();
         if (_proxies.Length == 0) throw new InvalidOperationException("no proxies available");
 
-        var proxyData = NextRandomProxyData(failThreshold: 3);
+        var proxyData = NextRandomProxyData(failThreshold: 1);
 
         var httpClientHandler = new HttpClientHandler
         {
