@@ -24,57 +24,43 @@ var configuration = new ConfigurationBuilder()
 
 // Setup dependency injection
 var serviceCollection = new ServiceCollection()
-    //.AddPersistencePostgres(configuration)
+    .AddPersistencePostgres(configuration)
     .AddDomainServices()
     .AddWebscraper()
     .AddLoggingSerilog();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-var logger = serviceProvider.GetRequiredService<ILogger>();
+var webscraper = serviceProvider.GetRequiredService<IWebscraperPort>();
 
-//var proxy = new WebProxy("52.226.125.25", 8080);
-//var httpClientHandler = new HttpClientHandler
+var projects = await webscraper.Scrape(ProjectSource.FreelanceDe);
+
+
+
+
+//var httpHelper = serviceProvider.GetRequiredService<HttpHelper>();
+//var tasks = new List<Task>();
+//for (var i = 0; i < 50; i++)
 //{
-//    Proxy = proxy,
-//    UseProxy = true,
-//};
+//    tasks.Add(
+//        Task.Run(async () =>
+//        {
+//            var html = await httpHelper.GetHtml("http://www.wieistmeineip.de/");
+//            if (html == null)
+//            {
+//                Console.WriteLine("Failed to get html");
+//                return;
+//            }
+//            var result = html.DocumentNode.SelectSingleNode("//div[@id='ipv4']/div[@class='title']")?.InnerText;
+//            if (result == null)
+//            {
+//                Console.WriteLine($"Failed to find ip node: {html.ParsedText}");
+//                return;
+//            }
+//            Console.WriteLine(result);
+//        })
+//    );
+//}
 
-//var httpClient = new HttpClient(httpClientHandler);
-
-
-//using HttpResponseMessage response = await httpClient.GetAsync("http://httpbin.org/ip");
-//string responseContent = await response.Content.ReadAsStringAsync();
-//Console.WriteLine(responseContent);
-
-
-var httpHelper = serviceProvider.GetRequiredService<HttpHelper>();
-var tasks = new List<Task>();
-for (var i = 0; i < 50; i++)
-{
-    tasks.Add(
-        Task.Run(async () =>
-        {
-            var html = await httpHelper.GetHtml("http://www.wieistmeineip.de/");
-            if (html == null)
-            {
-                Console.WriteLine("Failed to get html");
-                return;
-            }
-            var result = html.DocumentNode.SelectSingleNode("//div[@id='ipv4']/div[@class='title']")?.InnerText;
-            if (result == null)
-            {
-                Console.WriteLine($"Failed to find ip node: {html.ParsedText}");
-                return;
-            }
-            Console.WriteLine(result);
-        })
-    );
-}
-
-Task.WaitAll(tasks.ToArray());
+//Task.WaitAll(tasks.ToArray());
 Console.WriteLine("Done!");
-
-
-//var webscraperFactory = serviceProvider.GetRequiredService<IWebscraperPort>();
-//await webscraperFactory.Scrape(ProjectSource.FreelanceDe);
