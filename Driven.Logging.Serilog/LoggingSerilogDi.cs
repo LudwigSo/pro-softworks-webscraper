@@ -7,7 +7,7 @@ public static class LoggingSerilogDi
 {
     public static IServiceCollection AddLoggingSerilog(this IServiceCollection services)
     {
-        services.AddScoped<ILogger, SerilogLogger>();
+        services.AddSingleton<ILogger, SerilogLogger>();
 
         return services;
     }

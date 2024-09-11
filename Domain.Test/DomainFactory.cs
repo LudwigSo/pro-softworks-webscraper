@@ -10,16 +10,23 @@ public static class DomainFactory
         string url = "http://example.com",
         string? projectIdentifier = "123",
         string? description = "Description",
-        string? jobLocation = "London"
+        string? jobLocation = "London",
+        DateTime? plannedStart = null,
+        DateTime? postedAt = null
     )
     {
+        plannedStart ??= new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Local);
+        postedAt ??= new DateTime(2024, 10, 14, 9, 0, 32, DateTimeKind.Local);
+
         return new Project(
             source,
             title,
             url,
             projectIdentifier,
             description,
-            jobLocation
+            jobLocation,
+            plannedStart,
+            postedAt
         );
     }
 }

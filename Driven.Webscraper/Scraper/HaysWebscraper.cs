@@ -115,12 +115,12 @@ public class HaysWebscraper(ILogger logger) : IWebscraper
         var jobLocationString = $"{jobLocationType.GetString() ?? ""}, {jobLocationAddressCountry.GetString() ?? ""}, {jobLocationAddressPostalCode.GetString() ?? ""}, {jobLocationAddressLocality.GetString() ?? ""}";
 
         var project = new Project(
-            ProjectSource.Hays,
-            title,
-            url,
-            identifier.GetString() ?? "",
-            descriptionString,
-            jobLocationString
+            source: ProjectSource.Hays,
+            title: title,
+            url: url,
+            projectIdentifier: identifier.GetString() ?? "",
+            description: descriptionString,
+            jobLocation: jobLocationString
         );
 
         return project;
