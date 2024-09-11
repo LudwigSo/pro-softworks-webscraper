@@ -1,24 +1,41 @@
 namespace Domain.Model;
 
-public class Project(
-    ProjectSource source,
-    string title,
-    string url,
-    string? projectIdentifier,
-    string? description,
-    string? jobLocation)
+public class Project
 {
     public int Id { get; init; }
-    public ProjectSource Source { get; } = source;
-    public string Title { get; } = title;
-    public string Url { get; } = url;
-    public string? ProjectIdentifier { get; } = projectIdentifier;
-    public string? Description { get; } = description;
-    public string? JobLocation { get; } = jobLocation;
+    public ProjectSource Source { get; }
+    public string Title { get; }
+    public string Url { get; }
+    public string? ProjectIdentifier { get; }
+    public string? Description { get; }
+    public string? JobLocation { get; }
+    public DateTime? PlannedStart { get; }
+    public DateTime? PostedAt { get; }
     public DateTime FirstSeenAt { get; } = DateTime.Now;
     public DateTime? RemovedAt { get; private set; }
     public bool IsActive { get; private set; } = true;
     public List<Tag> Tags { get; } = new();
+
+    public Project(
+        ProjectSource source,
+        string title,
+        string url,
+        string? projectIdentifier = null,
+        string? description = null,
+        string? jobLocation = null,
+        DateTime? plannedStart = null,
+        DateTime? postedAt = null
+    )
+    {
+        Source = source;
+        Title = title;
+        Url = url;
+        ProjectIdentifier = projectIdentifier;
+        Description = description;
+        JobLocation = jobLocation;
+        PlannedStart = plannedStart;
+        PostedAt = postedAt;
+    }
 
     internal void ReTag(Tag[] tags)
     {

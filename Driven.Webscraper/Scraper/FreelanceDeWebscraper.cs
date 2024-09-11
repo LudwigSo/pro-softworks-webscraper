@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Domain.Model;
@@ -129,6 +130,21 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
             var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText;
             var identifier = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Referenz-Nummer']/parent::li")?.InnerText?.Trim();
             var jobLocation = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Projektort']/parent::li")?.InnerText?.Trim();
+
+            var plannedStartString = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Geplanter Start']/parent::li")?.InnerText?.Trim();
+            DateTime? plannedStart = plannedStartString == null ? null : DateTime.ParseExact(plannedStartString, "MMMM yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal);
+            if (plannedStart.HasValue)
+            {
+                plannedStart.Value.AddDays((double)-plannedStart.Value.Day + 1);
+                plannedStart.Value.AddHours((double)-plannedStart.Value.Hour + 1);
+                plannedStart.Value.AddMinutes((double)-plannedStart.Value.Minute + 1);
+                plannedStart.Value.AddSeconds((double)-plannedStart.Value.Second + 1);
+            }
+
+            var postedAtString = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Letztes Update']/parent::li")?.InnerText?.Trim();
+            DateTime? postedAt = postedAtString == null ? null : DateTime.ParseExact(postedAtString, "dd.MM.yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal);
+
+
             var scriptNodes = projectSite.DocumentNode.SelectNodes("//script[@type='application/ld+json']");
             var description = string.Empty;
             var descriptionNode = scriptNodes.SingleOrDefault(n => n.InnerText.StartsWith("{\"datePosted"));
@@ -146,12 +162,14 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
 
 
             var project = new Project(
-                ProjectSource.FreelanceDe,
-                title,
-                projectUrl,
-                identifier,
-                description,
-                jobLocation
+                source: ProjectSource.FreelanceDe,
+                title: title,
+                url: projectUrl,
+                projectIdentifier: identifier,
+                description: description,
+                jobLocation: jobLocation,
+                plannedStart: plannedStart,
+                postedAt: postedAt
             );
 
             return project;
