@@ -13,7 +13,7 @@ internal static class ServiceQuartzDi
             config.ScheduleJob<HaysWebscraperJob>(trigger => 
                 trigger
                     .WithIdentity("HaysWebscraperJob")
-                    .WithCronSchedule("0 */15 * * * ?")
+                    .WithCronSchedule("0 */1 * * * ?")
             );
             config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
                 trigger
