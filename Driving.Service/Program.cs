@@ -16,23 +16,23 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-builder = builder.ConfigureServices((context, services) =>
-{
-    services.AddPersistencePostgres(configuration)
-        .AddDomainServices()
-        .AddLoggingSerilog()
-        .AddWebscraper()
-        .AddServiceQuartz();
-});
-
 //builder = builder.ConfigureServices((context, services) =>
 //{
 //    services.AddPersistencePostgres(configuration)
 //        .AddDomainServices()
 //        .AddLoggingSerilog()
-//        .AddWebscraperForDebugging()
-//        .AddServiceQuartzForDebugging();
+//        .AddWebscraper()
+//        .AddServiceQuartz();
 //});
+
+builder = builder.ConfigureServices((context, services) =>
+{
+    services.AddPersistencePostgres(configuration)
+        .AddDomainServices()
+        .AddLoggingSerilog()
+        .AddWebscraperForDebugging()
+        .AddServiceQuartzForDebugging();
+});
 
 var app = builder.Build();
 
