@@ -6,6 +6,7 @@ using Driven.Webscraper;
 using Driven.Webscraper.Test;
 using Driving.Service;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 var builder = Host.CreateDefaultBuilder()
     .AddAdapterRealtimeMessagesSignalR();
@@ -46,3 +47,15 @@ using (var scope = app.Services.CreateScope())
 
 // will block until the last running job completes
 await app.RunAsync();
+
+// TODO this is currently required to create migrations, find a different way and remove this!
+public class ContextFactory : IDesignTimeDbContextFactory<Context>
+{
+    public Context CreateDbContext(string[] args)
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<Context>();
+        optionsBuilder.UseNpgsql("Host=db;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword;");
+
+        return new Context(optionsBuilder.Options);
+    }
+}
