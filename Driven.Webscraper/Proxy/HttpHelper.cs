@@ -11,7 +11,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
     public async Task<string?> Get(
         string url,
         (HttpClient httpClient, ProxyData proxyData)? httpClientAndProxy = null,
-        int tryNumber = 1)
+        int tryNumber = 2)
     {
         httpClientAndProxy ??= await _httpClientFactory.CreateWithProxy();
         var httpClient = httpClientAndProxy.Value.httpClient;
@@ -39,7 +39,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
     public async Task<HtmlDocument?> GetHtml(
         string url,
         (HttpClient httpClient, ProxyData proxyData)? httpClientAndProxy = null,
-        int tryNumber = 1)
+        int tryNumber = 2)
     {
         httpClientAndProxy ??= await _httpClientFactory.CreateWithProxy();
         var html = await Get(url, httpClientAndProxy);
