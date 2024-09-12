@@ -110,29 +110,40 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IW
             _logger.LogInformation($"Scraping project, retry: {retry}, url {projectUrl}");
             var projectSite = await _httpHelper.GetHtml(projectUrl);
 
-            var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText;
-            var identifier = projectSite.DocumentNode.SelectSingleNode("//div[@class='card']/dl/dt='Projekt-ID:'/following-sibling::dd")?.InnerText?.Trim();
+            var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText?.Trim();
+            if (string.IsNullOrEmpty(title)) throw new InvalidOperationException($"Title is empty, url: {projectUrl}");
+
+            var identifier = projectSite.DocumentNode.SelectSingleNode("//dl/dt[text()='Projekt-ID:']/following-sibling::dd[1]")?.InnerText?.Trim();
             var jobLocation = projectSite.DocumentNode.SelectSingleNode("//span[@class='address']")?.InnerText?.Trim();
 
-            var plannedStartString = projectSite.DocumentNode.SelectSingleNode("//div[@class='card']/dl/dt='Start'/following-sibling::dd")?.InnerText?.Trim();
-            DateTime? plannedStart = plannedStartString == null ? null : DateTime.ParseExact(plannedStartString, "MM.yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal);
-            if (plannedStart.HasValue)
+            var plannedStartString = projectSite.DocumentNode.SelectSingleNode("//dl/dt[text()='Start']/following-sibling::dd[1]")?.InnerText?.Trim();
+            DateTime? plannedStart;
+            try 
             {
-                plannedStart.Value.AddDays((double)-plannedStart.Value.Day + 1);
-                plannedStart.Value.AddHours((double)-plannedStart.Value.Hour + 1);
-                plannedStart.Value.AddMinutes((double)-plannedStart.Value.Minute + 1);
-                plannedStart.Value.AddSeconds((double)-plannedStart.Value.Second + 1);
+                plannedStart = plannedStartString == null ? null : DateTime.ParseExact(plannedStartString, "MM.yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal);
+                if (plannedStart.HasValue)
+                {
+                    plannedStart.Value.AddDays((double)-plannedStart.Value.Day + 1);
+                    plannedStart.Value.AddHours((double)-plannedStart.Value.Hour + 1);
+                    plannedStart.Value.AddMinutes((double)-plannedStart.Value.Minute + 1);
+                    plannedStart.Value.AddSeconds((double)-plannedStart.Value.Second + 1);
+                }
+            }
+            catch
+            {
+                // most likely a text with "ab sofort" or "asap"
+                plannedStart = DateTime.Now;
             }
 
-            var postedAtString = projectSite.DocumentNode.SelectSingleNode("//div[@class='card']/dl/dt='Eingestellt'/following-sibling::dd")?.InnerText?.Trim();
+            var postedAtString = projectSite.DocumentNode.SelectSingleNode("//dl/dt[text()='Eingestellt']/following-sibling::dd[1]")?.InnerText?.Trim();
             DateTime? postedAt = postedAtString == null ? null : DateTime.ParseExact(postedAtString, "dd.MM.yyyy", new CultureInfo("de-DE"), DateTimeStyles.AssumeLocal);
 
             var description = projectSite.DocumentNode.SelectSingleNode("//div[@class='description']/div[@class='projectcontent']/div[@class='content']").InnerText.Trim();
-            if (description == string.Empty) throw new InvalidOperationException($"Description is empty, url: {projectUrl}");
+            if (string.IsNullOrEmpty(description)) throw new InvalidOperationException($"Description is empty, url: {projectUrl}");
 
 
             var project = new Project(
-                source: ProjectSource.FreelanceDe,
+                source: ProjectSource.FreelancerMap,
                 title: title,
                 url: projectUrl,
                 projectIdentifier: identifier,
