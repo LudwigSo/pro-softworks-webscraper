@@ -1,4 +1,5 @@
-﻿using Quartz;
+﻿using Driving.Service.Jobs;
+using Quartz;
 
 namespace Driving.Service;
 
@@ -18,8 +19,7 @@ internal static class ServiceQuartzDi
             config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelanceDeWebscraperJob")
-                    //.WithCronSchedule("0 */30 * * * ?")
-                    .StartNow()
+                    .WithCronSchedule("0 25 */12 * * ?")
             );
         });
         services.AddQuartzHostedService(opt =>

@@ -16,6 +16,9 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
     private readonly List<string> _kategorieUrls =
     [
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Softwareentwicklung-Softwareprogrammierung-Projekte",
+        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Softwarearchitektur-Softwareanalyse-Projekte",
+        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/User-Interface-User-Experience-Projekte/",
+        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte/"
     ];
 
     public async Task<List<Project>> Scrape()
@@ -50,7 +53,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         var projects = new List<Project>();
         for (var page = 0; page < numberOfPages; page++)
         {
-            var projectsFromPage = await ScrapeProjectSearchResults(kategorieUrl, mainPage, page);
+            var projectsFromPage = await ScrapeProjectSearchResults(kategorieUrl, (mainPage, ExtractProjectUrls(mainPage)), page);
             projects.AddRange(projectsFromPage);
             if (lastScrapedAt.HasValue)
             {
@@ -69,16 +72,14 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         //return projectsScrapeTasks.SelectMany(t => t.Result).ToList();
     }
 
-    private async Task<List<Project>> ScrapeProjectSearchResults(string kategorieUrl, HtmlDocument mainPage, int page = 0)
+    private async Task<List<Project>> ScrapeProjectSearchResults(string kategorieUrl, (HtmlDocument Html, string[] ProjectUrls) mainPage, int page = 0)
     {
-        var projectSearchResultSite = (page == 0)
+        var searchResult = (page == 0)
                         ? mainPage
                         : await GetProjectSearchResults(kategorieUrl, page);
 
-        var projectUrls = GetProjectUrls(projectSearchResultSite);
-
         var projectScrapeTasks = new List<Task<Project>>();
-        foreach (var projectUrl in projectUrls)
+        foreach (var projectUrl in searchResult.ProjectUrls)
         {
             projectScrapeTasks.Add(ScrapeProject("http://www.freelance.de" + projectUrl));
         }
@@ -87,20 +88,26 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         return projectScrapeTasks.Select(t => t.Result).ToList();
     }
 
-    private async Task<HtmlDocument> GetProjectSearchResults(string kategorieUrl, int page = 0, int retry = 0)
+    private async Task<(HtmlDocument Html, string[] ProjectUrls)> GetProjectSearchResults(string kategorieUrl, int page = 0, int retry = 0)
     {
         try
         {
             var url = $"{kategorieUrl}/?_offset={(page) * 20}";
             var document = await _httpHelper.GetHtml(url);
             if (document == null) throw new InvalidOperationException("Document is null");
-            return document;
+            return (document, ExtractProjectUrls(document));
         }
         catch
         {
             if (retry > 5) throw;
             return await GetProjectSearchResults(kategorieUrl, page, retry + 1);
         }
+    }
+
+    private static string[] ExtractProjectUrls(HtmlDocument document)
+    {
+        var projectUrlNodes = document.DocumentNode.SelectNodes("//a[starts-with(@id, 'project_link_')]");
+        return projectUrlNodes.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
     private async Task<(int, HtmlDocument)> GetNumberOfProjects(string kategorieUrl, int retry = 0)
@@ -124,11 +131,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
     private static string RemoveNumberOfProjectsPrefix(string str) => Regex.Replace(str, @"Projekte:  \d{1,4}-\d{2,4} von ", "");
     private static string RemoveNumberOfProjectsSuffix(string str) => Regex.Replace(str, @"\D", "");
 
-    private static string[] GetProjectUrls(HtmlDocument searchSite)
-    {
-        var projectUrls = searchSite.DocumentNode.SelectNodes("//a[starts-with(@id, 'project_link_')]");
-        return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
-    }
+
 
     private async Task<Project> ScrapeProject(string projectUrl, int retry = 0)
     {
