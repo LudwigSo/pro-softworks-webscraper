@@ -1,3 +1,6 @@
+include:
+  - Driving.Frontend/compose.yaml
+
 services:
   drivingservice:
     image: drivingservice
