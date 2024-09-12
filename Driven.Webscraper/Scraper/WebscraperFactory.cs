@@ -14,18 +14,30 @@ public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscra
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
-    public async Task<List<Project>> Scrape(ProjectSource source)
-    {
-        var webscraper = CreateWebscraper(source);
-        return await webscraper.Scrape();
-    }
-
-    private IWebscraper CreateWebscraper(ProjectSource source)
+    public Task<List<Project>> Scrape(ProjectSource source)
     {
         return source switch
         {
-            ProjectSource.Hays => new HaysWebscraper(_logger),
-            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper),
+            ProjectSource.Hays => new HaysWebscraper(_logger).Scrape(),
+            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).Scrape(),
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public bool ScrapeOnlyNewSupported(ProjectSource source)
+    {
+        return source switch
+        {
+            ProjectSource.FreelanceDe => true,
+            _ => false
+        };
+    }
+
+    public Task<List<Project>> ScrapeOnlyNew(ProjectSource source, Project lastScrapedProject)
+    {
+        return source switch
+        {
+            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(lastScrapedProject),
             _ => throw new NotImplementedException()
         };
     }

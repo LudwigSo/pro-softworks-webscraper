@@ -11,6 +11,9 @@ namespace Driven.Persistence.Postgres.Queries
         public Task<Project[]> GetActiveBySource(ProjectSource source)
             => _context.Projects.Include(p => p.Tags).Where(x => x.Source == source && x.RemovedAt == null).ToArrayAsync();
 
+        public Task<Project> GetLastScrapedBySource(ProjectSource source)
+            => _context.Projects.Include(p => p.Tags).Where(x => x.Source == source && x.RemovedAt == null).OrderByDescending(x => x.PostedAt).FirstAsync();
+
         public Task<Project[]> GetActiveWithAnyTag()
             => _context.Projects.Include(p => p.Tags).Where(x => x.RemovedAt == null && x.Tags.Count != 0).ToArrayAsync();
 
