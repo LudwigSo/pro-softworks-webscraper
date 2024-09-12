@@ -19,6 +19,16 @@ namespace Driven.Webscraper.Test
             };
         }
 
+        public Task<List<Project>> ScrapeOnlyNew(ProjectSource source, Project lastScrapedProject)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ScrapeOnlyNewSupported(ProjectSource source)
+        {
+            throw new NotImplementedException();
+        }
+
         private string ExampleDescription()
         {
             return "lorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsumlorem ipsum";

@@ -5,6 +5,7 @@ using Domain.Ports.Queries;
 namespace Domain.CommandHandlers;
 
 public sealed record ScrapeAndProcessCommand(ProjectSource Source);
+public sealed record ScrapeAndProcessOnlyNewCommand(ProjectSource Source);
 
 public class ScrapeAndProcessCommandHandler(
     ILogger logger,
@@ -50,5 +51,33 @@ public class ScrapeAndProcessCommandHandler(
         await _realtimeMessagesPort.NewProjectsAdded(newProjects.Where(p => p.Tags.Count > 0));
         await _realtimeMessagesPort.ProjectsRemoved(removedProjects.Where(p => p.Tags.Count > 0));
         _logger.LogInformation($"{command.Source}: Project changes (added/removed) published");
+    }
+
+    public async Task Handle(ScrapeAndProcessOnlyNewCommand command)
+    {
+        if (!_webscraperPort.ScrapeOnlyNewSupported(command.Source))
+        {
+            _logger.LogInformation($"{command.Source}: ScrapeOnlyNew not supported");
+            return;
+        }
+
+        var lastScrapedProject = await _projectQueriesPort.GetLastScrapedBySource(command.Source);
+        var projects = await _webscraperPort.ScrapeOnlyNew(command.Source, lastScrapedProject);
+        _logger.LogInformation($"{command.Source}: {projects.Count} most likely new projects found on website");
+
+        var activeProjects = await _projectQueriesPort.GetActiveBySource(command.Source);
+
+        var newProjects = projects
+            .Where(p => activeProjects.All(ap => !ap.IsSameProject(p)))
+            .ToList();
+        await _writeContext.AddRange(newProjects);
+        _logger.LogInformation($"{command.Source}: Add {newProjects.Count} projects");
+
+        await _writeContext.SaveChangesAsync();
+        _logger.LogInformation($"{command.Source}: Persisted changes");
+
+        var newProjectsWithTags = newProjects.Where(p => p.Tags.Count > 0).ToList();
+        await _realtimeMessagesPort.NewProjectsAdded(newProjectsWithTags);
+        _logger.LogInformation($"{command.Source}: {newProjectsWithTags.Count} projects with tags published");
     }
 }

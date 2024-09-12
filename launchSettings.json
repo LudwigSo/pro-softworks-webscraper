@@ -5,7 +5,7 @@
       "commandVersion": "1.0",
       "composeLaunchAction": "LaunchBrowser",
       "composeLaunchServiceName": "drivingapi",
-      "composeLaunchUrl": "http://localhost:8080/index.html",
+      "composeLaunchUrl": "http://localhost:8080/swagger/index.html",
       "serviceActions": {
         "db": "StartWithoutDebugging",
         "drivingapi": "StartDebugging",
