@@ -33,12 +33,12 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         return projects.Distinct().ToList();
     }
 
-    public async Task<List<Project>> ScrapeOnlyNew(Project LastScrapedProject)
+    public async Task<List<Project>> ScrapeOnlyNew(Project? LastScrapedProject)
     {
         var projects = new List<Project>();
         foreach (var kategorieUrl in _kategorieUrls)
         {
-            var projectsForKategorie = await ScrapeKategorie(kategorieUrl, LastScrapedProject.PostedAt);
+            var projectsForKategorie = await ScrapeKategorie(kategorieUrl, LastScrapedProject?.PostedAt);
             projects.AddRange(projectsForKategorie);
         }
 
