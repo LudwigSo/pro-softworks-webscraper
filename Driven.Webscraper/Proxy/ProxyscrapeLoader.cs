@@ -4,9 +4,9 @@ namespace Driven.Webscraper.Proxy;
 
 public class ProxyscrapeLoader : IProxyLoader
 {
-    private const string URL = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&proxy_format=ipport&format=json&timeout=1000";
+    private const string URL = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&proxy_format=ipport&format=json&timeout=3000";
     private const string FILE_PATH = "ProxyscrapeLoader.json";
-    private SemaphoreSlim _loadAvailableProxiesSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _loadAvailableProxiesSemaphore = new(1, 1);
     public async Task<ProxyData[]> LoadAvailableProxies()
     {
         await _loadAvailableProxiesSemaphore.WaitAsync();
