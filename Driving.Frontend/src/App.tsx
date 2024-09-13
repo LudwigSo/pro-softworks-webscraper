@@ -1,25 +1,34 @@
 import { useEffect, useState } from "react";
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
 import "./App.css";
 import { Button } from "./components/ui/button";
+import { tagApi } from "./api-configs";
+import { CreateTagCommand, Tag, TagCreatePostRequest } from "./api";
+import { Input } from "./components/ui/input";
 
 function App() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<Tag[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [inputValue, setInputValue] = useState("");
+
   async function fetchData() {
     setLoading(true);
     setData(null);
     try {
-      const response = await fetch(
-        "http://localhost:8080/project/all-active-with-any-tag"
-      );
-      const data = await response.json();
-      setData(data);
+      const tags = await tagApi.tagAllGet();
+      setData(tags);
     } catch (error) {
       alert(error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function addTag() {
+    try {
+      await tagApi.tagCreatePost({ createTagCommand: { name: inputValue } });
+      fetchData();
+    } catch (error) {
+      alert(error);
     }
   }
 
@@ -30,8 +39,7 @@ function App() {
   return (
     <>
       <div>
-        <Button onClick={() => fetchData()}>
-          {" "}
+        <div onClick={() => fetchData()}>
           {data ? (
             <pre>{JSON.stringify(data, null, 2)}</pre>
           ) : loading ? (
@@ -39,28 +47,18 @@ function App() {
           ) : (
             "Fetch Data"
           )}
-        </Button>
+        </div>
       </div>
-      {/* <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="flex w-full max-w-sm items-center space-x-2">
+        {inputValue}
+        <Input
+          value={inputValue}
+          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setInputValue(e.target.value)
+          }
+        />
+        <Button onClick={addTag}>add tag</Button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
     </>
   );
 }
