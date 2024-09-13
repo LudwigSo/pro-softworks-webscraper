@@ -67,7 +67,6 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IW
         {
             var url = $"{_url}&pagenr={page +1}";
             var document = await _httpHelper.GetHtml(url);
-            if (document == null) throw new InvalidOperationException("Document is null");
             return (document, ExtractProjectUrls(document));
         }
         catch
@@ -88,7 +87,7 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IW
         try
         {
             var mainPage = await _httpHelper.GetHtml(_url);
-            var numberOfEntriesDiv = mainPage!.DocumentNode.SelectSingleNode("//div[@class='search-result-header']/div/h1");
+            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='search-result-header']/div/h1");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = RemoveAnyNonNumber(innerText);
             return (int.Parse(innerText), mainPage);
@@ -110,7 +109,7 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IW
             _logger.LogInformation($"Scraping project, retry: {retry}, url {projectUrl}");
             var projectSite = await _httpHelper.GetHtml(projectUrl);
 
-            var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText?.Trim();
+            var title = projectSite.DocumentNode.SelectSingleNode("//h1").InnerText?.Trim();
             if (string.IsNullOrEmpty(title)) throw new InvalidOperationException($"Title is empty, url: {projectUrl}");
 
             var identifier = projectSite.DocumentNode.SelectSingleNode("//dl/dt[text()='Projekt-ID:']/following-sibling::dd[1]")?.InnerText?.Trim();
