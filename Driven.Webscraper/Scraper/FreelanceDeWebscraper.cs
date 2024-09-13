@@ -94,7 +94,6 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         {
             var url = $"{kategorieUrl}/?_offset={(page) * 20}";
             var document = await _httpHelper.GetHtml(url);
-            if (document == null) throw new InvalidOperationException("Document is null");
             return (document, ExtractProjectUrls(document));
         }
         catch
@@ -115,7 +114,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : IWeb
         try
         {
             var mainPage = await _httpHelper.GetHtml(kategorieUrl);
-            var numberOfEntriesDiv = mainPage!.DocumentNode.SelectSingleNode("//div[@id='pagination']/p");
+            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@id='pagination']/p");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = RemoveNumberOfProjectsPrefix(innerText);
             innerText = RemoveNumberOfProjectsSuffix(innerText);
