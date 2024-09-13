@@ -1,16 +1,40 @@
-// import { useState } from 'react'
+import { useEffect, useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 import './App.css'
 import { Button } from './components/ui/button'
 
 function App() {
-  //const [count, setCount] = useState(0)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchData() {
+    setLoading(true);
+    setData(null);
+    try {
+      const response = await fetch('http://localhost:8080/project/all-active-with-any-tag');
+      const data = await response.json();
+      setData(data);
+    }catch (error) {
+      alert(error);
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <>
     <div>
-      <Button>Clickme</Button>
+      <Button onClick={()=> fetchData()}>
+        {
+      data ? <pre>{JSON.stringify(data, null, 2)}</pre> : loading ? 'Loading...' : 'Fetch Data'
+      }
+      </Button>
     </div>
       {/* <div>
         <a href="https://vitejs.dev" target="_blank">
