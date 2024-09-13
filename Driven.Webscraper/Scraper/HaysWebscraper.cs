@@ -1,13 +1,15 @@
 using System.Text.Json;
 using Domain.Model;
 using Domain.Ports;
+using Driven.Webscraper.Proxy;
 using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogger logger) : IWebscraper
+public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly List<string> _haysSpezialisierungsUrls =
     [
@@ -35,94 +37,129 @@ public class HaysWebscraper(ILogger logger) : IWebscraper
 
     private async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
     {
-        var webLoader = new HtmlWeb();
-        var mainPage = await webLoader.LoadFromWebAsync(spezialisierungUrl);
-        var numberOfEntries = GetNumberOfProjects(mainPage);
+        var (numberOfEntries, mainPage) = await ScrapeNumberOfProjects(spezialisierungUrl);
         var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
-        var projectSearchResultSites = new List<HtmlDocument> { mainPage };
 
-        for (var i = 2; i <= numberOfPages; i++)
+        var scrapePageTasks = new List<Task<List<Project>>>();
+        for (var page = 0; page < numberOfPages; page++)
         {
-            var projectSearchResultSite = await webLoader.LoadFromWebAsync(GetCompleteUrl(spezialisierungUrl, i));
-            projectSearchResultSites.Add(projectSearchResultSite);
+            scrapePageTasks.Add(ScrapeSearchPage(mainPage, page));
         }
+        Task.WaitAll([.. scrapePageTasks]);
+        return scrapePageTasks.SelectMany(t => t.Result).ToList();
+    }
 
-        var projectUrls = projectSearchResultSites.SelectMany(GetProjectUrls).ToList();
-        var projects = new List<Project>();
+    private async Task<List<Project>> ScrapeSearchPage(HtmlDocument mainPage, int page)
+    {
+        var projectUrlsFromPage = (page == 0) ? ExtractProjectUrls(mainPage) : await ScrapeProjectUrlsFromSearchSite(page);
+        return await ScrapeProjectsByUrl(projectUrlsFromPage);
+    }
+
+    private async Task<List<Project>> ScrapeProjectsByUrl(string[] projectUrls)
+    {
+        var projectScrapeTasks = new List<Task<Project?>>();
         foreach (var projectUrl in projectUrls)
         {
-            try
-            {
-                var project = ScrapeProject(projectUrl);
-                projects.Add(project);
-            }
-            catch (Exception e)
-            {
-                _logger.LogException(e, $"Error scraping project {projectUrl}");
-            }
+            projectScrapeTasks.Add(ScrapeProject(projectUrl));
+        }
+
+        List<Project> projects = new();
+        foreach (var projectScrapeTask in projectScrapeTasks)
+        {
+            var project = await projectScrapeTask;
+            if (project == null) continue;
+            projects.Add(project);
         }
 
         return projects;
     }
 
-    private static string GetCompleteUrl(string spezialisierungsUrl, int page = 1)
+    private async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
     {
-        return $"{spezialisierungsUrl}/j/Contracting/3/p/{page}?q=&e=false&pt=false";
+        try
+        {
+            var url = $"{spezialisierungUrl}/j/Contracting/3/p/{page + 1}?q=&e=false&pt=false";
+            var document = await _httpHelper.GetHtml(url);
+            return ExtractProjectUrls(document);
+        }
+        catch
+        {
+            if (retry > 3) throw;
+            return await ScrapeProjectUrlsFromSearchSite(spezialisierungUrl, page, retry + 1);
+        }
     }
 
-    private static int GetNumberOfProjects(HtmlDocument projectMainSite)
-    {
-        var numberOfEntriesDiv = projectMainSite.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
-        var numberOfEntriesText = numberOfEntriesDiv.InnerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
-        return int.Parse(numberOfEntriesText);
-    }
-
-    private static List<string> GetProjectUrls(HtmlDocument searchSite)
+    private static string[] ExtractProjectUrls(HtmlDocument searchSite)
     {
         var projectUrls = searchSite.DocumentNode.SelectNodes("//a[@class='search__result__header__a']");
-        return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToList();
+        return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
-    private Project ScrapeProject(string projectUrl)
+    private async Task<(int, HtmlDocument)> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
     {
-        var webLoader = new HtmlWeb();
-        var projectSite = webLoader.Load(projectUrl);
-        _logger.LogDebug($"Scraping {projectUrl}");
-
-        var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
-
-        var jsonDoc = JsonDocument.Parse(projectScript);
-        var title = jsonDoc.RootElement.GetProperty("title").GetString();
-        var url = jsonDoc.RootElement.GetProperty("url").GetString();
-
-        if (title == null || url == null)
+        try
         {
-            throw new InvalidOperationException($"Required fields not found in json (title: {title}, url: {url})");
+            var mainPage = await _httpHelper.GetHtml(categoryUrl);
+            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
+            var innerText = numberOfEntriesDiv.InnerText.Trim();
+            innerText = innerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
+            return (int.Parse(innerText), mainPage);
         }
+        catch
+        {
+            if (retry > 3) throw;
+            return await ScrapeNumberOfProjects(categoryUrl, retry + 1);
+        }
+    }
 
-        jsonDoc.RootElement.TryGetProperty("identifier", out var identifier);
-        jsonDoc.RootElement.TryGetProperty("description", out var description);
-        jsonDoc.RootElement.TryGetProperty("jobBenefits", out var jobBenefits);
+    private async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    {
+        try
+        {
+            _logger.LogInformation($"Scraping project, retry: {retry}, url {projectUrl}");
+            var projectSite = await _httpHelper.GetHtml(projectUrl);
 
-        jsonDoc.RootElement.TryGetProperty("jobLocation", out var jobLocation);
-        jobLocation.TryGetProperty("@type", out var jobLocationType);
-        jobLocation.TryGetProperty("address", out var jobLocationAddress);
-        jobLocationAddress.TryGetProperty("addressLocality", out var jobLocationAddressLocality);
-        jobLocationAddress.TryGetProperty("postalCode", out var jobLocationAddressPostalCode);
-        jobLocationAddress.TryGetProperty("addressCountry", out var jobLocationAddressCountry);
+            var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
 
-        var descriptionString = description.GetString() ?? "".Replace("Der Bereich IT ist unsere Kernkompetenz, auf deren Grundlage sich Hays entwickelt hat. Wir sind das größte privatwirtschaftlich organisierte IT-Personaldienstleistungsunternehmen in Deutschland und haben für jede Karrierestufe das passende Angebot – egal ob Sie an Vakanzen in agilen KMUs oder starken DAX-Konzernen interessiert sind. Wir beherrschen die komplette IT-Klaviatur von Support bis zur Softwarearchitektur oder Digitalisierung – dank unseres umfangreichen Portfolios ist für jeden etwas dabei. So konnten wir in den vergangenen Jahrzehnten im Rahmen einer Life-Long-Partnerschaft unzählige Fach- und Führungskräfte aus der IT dabei unterstützen, die Weichen für eine erfolgreiche Karriere zu stellen. Unser Beratungsteam ist spezialisiert und somit in der Lage, auf Ihre Wünsche und Vorstellungen einzugehen und Sie auf Bewerbungsgespräche und Vertragsverhandlungen bestens vorzubereiten. Probieren Sie es aus und erfahren Sie, was der Markt Ihnen zu bieten hat – völlig kostenfrei, diskret und unverbindlich! Wir freuen uns auf Sie.", "");
-        var jobLocationString = $"{jobLocationType.GetString() ?? ""}, {jobLocationAddressCountry.GetString() ?? ""}, {jobLocationAddressPostalCode.GetString() ?? ""}, {jobLocationAddressLocality.GetString() ?? ""}";
+            var jsonDoc = JsonDocument.Parse(projectScript);
+            var title = jsonDoc.RootElement.GetProperty("title").GetString();
+            var url = jsonDoc.RootElement.GetProperty("url").GetString();
 
-        var project = new Project(
-            source: ProjectSource.Hays,
-            title: title,
-            url: url,
-            projectIdentifier: identifier.GetString() ?? "",
-            description: descriptionString,
-            jobLocation: jobLocationString
-        );
+            if (title == null || url == null)
+            {
+                throw new InvalidOperationException($"Required fields not found in json (title: {title}, url: {url})");
+            }
 
-        return project;
+            jsonDoc.RootElement.TryGetProperty("identifier", out var identifier);
+            jsonDoc.RootElement.TryGetProperty("description", out var description);
+            jsonDoc.RootElement.TryGetProperty("jobBenefits", out var jobBenefits);
+
+            jsonDoc.RootElement.TryGetProperty("jobLocation", out var jobLocation);
+            jobLocation.TryGetProperty("@type", out var jobLocationType);
+            jobLocation.TryGetProperty("address", out var jobLocationAddress);
+            jobLocationAddress.TryGetProperty("addressLocality", out var jobLocationAddressLocality);
+            jobLocationAddress.TryGetProperty("postalCode", out var jobLocationAddressPostalCode);
+            jobLocationAddress.TryGetProperty("addressCountry", out var jobLocationAddressCountry);
+
+            var descriptionString = description.GetString() ?? "".Replace("Der Bereich IT ist unsere Kernkompetenz, auf deren Grundlage sich Hays entwickelt hat. Wir sind das größte privatwirtschaftlich organisierte IT-Personaldienstleistungsunternehmen in Deutschland und haben für jede Karrierestufe das passende Angebot – egal ob Sie an Vakanzen in agilen KMUs oder starken DAX-Konzernen interessiert sind. Wir beherrschen die komplette IT-Klaviatur von Support bis zur Softwarearchitektur oder Digitalisierung – dank unseres umfangreichen Portfolios ist für jeden etwas dabei. So konnten wir in den vergangenen Jahrzehnten im Rahmen einer Life-Long-Partnerschaft unzählige Fach- und Führungskräfte aus der IT dabei unterstützen, die Weichen für eine erfolgreiche Karriere zu stellen. Unser Beratungsteam ist spezialisiert und somit in der Lage, auf Ihre Wünsche und Vorstellungen einzugehen und Sie auf Bewerbungsgespräche und Vertragsverhandlungen bestens vorzubereiten. Probieren Sie es aus und erfahren Sie, was der Markt Ihnen zu bieten hat – völlig kostenfrei, diskret und unverbindlich! Wir freuen uns auf Sie.", "");
+            var jobLocationString = $"{jobLocationType.GetString() ?? ""}, {jobLocationAddressCountry.GetString() ?? ""}, {jobLocationAddressPostalCode.GetString() ?? ""}, {jobLocationAddressLocality.GetString() ?? ""}";
+
+            var project = new Project(
+                source: ProjectSource.Hays,
+                title: title,
+                url: url,
+                projectIdentifier: identifier.GetString() ?? "",
+                description: descriptionString,
+                jobLocation: jobLocationString
+            );
+
+            return project;
+        }
+        catch
+        {
+            _logger.LogInformation($"Error scraping project, retry: {retry}, url {projectUrl}");
+            if (retry > 2) return null;
+            return await ScrapeProject(projectUrl, retry + 1);
+        }
     }
 }
