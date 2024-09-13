@@ -31,12 +31,13 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
             if (htmlDocument.ParsedText.Contains("Internal Server Error") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Internal Server Error in document.");
             if (htmlDocument.ParsedText.Contains("502 Bad Gateway") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Bad Gateway Error in document.");
             await proxyData.IncrementSuccess();
+            _logger.LogInformation($"Succeeded getting html page try: {tryNumber}, {proxyData.ToLog()}, from {url}");
         }
         catch (Exception e)
         {
             await proxyData.IncrementFails();
-            _logger.LogInformation($"Failed getting page try: {tryNumber}, {proxyData.ToLog()}, from {url}");
-            if (tryNumber < 50)
+            _logger.LogInformation($"Failed getting html page try: {tryNumber}, {proxyData.ToLog()}, from {url}");
+            if (tryNumber < 10)
             {
                 return await GetHtml(url, null, tryNumber + 1);
             }
