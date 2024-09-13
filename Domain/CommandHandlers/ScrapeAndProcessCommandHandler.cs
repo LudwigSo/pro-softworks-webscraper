@@ -27,7 +27,16 @@ public class ScrapeAndProcessCommandHandler(
     public async Task Handle(ScrapeAndProcessCommand command)
     {
         _logger.LogInformation($"{command.Source}: Handle {nameof(ScrapeAndProcessCommand)}");
-        var projects = await _webscraperPort.Scrape(command.Source);
+        List<Project> projects;
+        try
+        {
+            projects = await _webscraperPort.Scrape(command.Source);
+        }
+        catch (Exception e)
+        {
+            _logger.LogException(e, $"{command.Source}: Scrape failed.");
+            return;
+        }
         _logger.LogInformation($"{command.Source}: {projects.Count} projects found on website");
 
         var activeProjects = await _projectQueriesPort.GetActiveBySource(command.Source);
@@ -46,7 +55,17 @@ public class ScrapeAndProcessCommandHandler(
         }
 
         var lastScrapedProject = await _projectQueriesPort.GetLastScrapedBySource(command.Source);
-        var projects = await _webscraperPort.ScrapeOnlyNew(command.Source, lastScrapedProject);
+        List<Project> projects;
+        try
+        {
+            projects = await _webscraperPort.ScrapeOnlyNew(command.Source, lastScrapedProject);
+        }
+        catch (Exception e)
+        {
+            _logger.LogException(e, $"{command.Source}: ScrapeOnlyNew failed.");
+            return;
+        }
+
         _logger.LogInformation($"{command.Source}: {projects.Count} potential new projects found on website");
 
         var activeProjects = await _projectQueriesPort.GetActiveBySource(command.Source);

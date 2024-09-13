@@ -16,7 +16,7 @@ public class ProxyData(string ip, int port)
     public bool IsAvailable()
     {
         if (Success == 0) return Fails < 2;
-        return Fails / Success < 0.2;
+        return Fails / Success < 0.1;
     }
 
     public async Task IncrementFails() {
