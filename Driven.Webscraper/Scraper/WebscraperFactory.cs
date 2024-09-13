@@ -20,6 +20,7 @@ public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscra
         {
             ProjectSource.Hays => new HaysWebscraper(_logger).Scrape(),
             ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).Scrape(),
+            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).Scrape(),
             _ => throw new NotImplementedException()
         };
     }
@@ -29,15 +30,17 @@ public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscra
         return source switch
         {
             ProjectSource.FreelanceDe => true,
+            ProjectSource.FreelancerMap => true,
             _ => false
         };
     }
 
-    public Task<List<Project>> ScrapeOnlyNew(ProjectSource source, Project lastScrapedProject)
+    public Task<List<Project>> ScrapeOnlyNew(ProjectSource source, Project? lastScrapedProject)
     {
         return source switch
         {
             ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(lastScrapedProject),
+            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).ScrapeOnlyNew(lastScrapedProject),
             _ => throw new NotImplementedException()
         };
     }
