@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import './App.css'
-import { Button } from './components/ui/button'
+import "./App.css";
+import { Button } from "./components/ui/button";
 
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-
   async function fetchData() {
     setLoading(true);
     setData(null);
     try {
-      const response = await fetch('http://localhost:8080/project/all-active-with-any-tag');
+      const response = await fetch(
+        "http://localhost:8080/project/all-active-with-any-tag"
+      );
       const data = await response.json();
       setData(data);
-    }catch (error) {
+    } catch (error) {
       alert(error);
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -29,13 +29,18 @@ function App() {
 
   return (
     <>
-    <div>
-      <Button onClick={()=> fetchData()}>
-        {
-      data ? <pre>{JSON.stringify(data, null, 2)}</pre> : loading ? 'Loading...' : 'Fetch Data'
-      }
-      </Button>
-    </div>
+      <div>
+        <Button onClick={() => fetchData()}>
+          {" "}
+          {data ? (
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+          ) : loading ? (
+            "Loading..."
+          ) : (
+            "Fetch Data"
+          )}
+        </Button>
+      </div>
       {/* <div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -57,7 +62,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p> */}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
