@@ -78,22 +78,28 @@ public class ScrapeAndProcessCommandHandler(
         _logger.LogInformation($"{source}: Published realtime {newProjectsWithTags.Count} new projects with tags");
     }
 
-    private async Task EvaluateAndRemoveOld(ProjectSource source, List<Project> projects, Project[] activeProjects)
+    private async Task EvaluateAndRemoveOld(ProjectSource source, List<Project> scrapedProjects, Project[] activeProjects)
     {
-        var removedProjects = activeProjects
-            .Where(p => projects.All(ap => !ap.IsSameProject(p)))
+        var projectsToRemove = activeProjects
+            .Where(p => scrapedProjects.All(ap => !ap.IsSameProject(p)))
             .ToList();
 
-        foreach (var removedProject in removedProjects)
+        if (scrapedProjects.Count == 0 || projectsToRemove.Count * 100 >= activeProjects.Length * 90)
+        {
+            _logger.LogInformation($"{source}: Removed no projects, potential error during scraper run. ProjectsToRemove: {projectsToRemove.Count}, ActiveProjects: {activeProjects.Length}");
+            return;
+        }
+
+        foreach (var removedProject in projectsToRemove)
         {
             removedProject.MarkAsRemoved();
         }
-        _logger.LogInformation($"{source}: Remove {removedProjects.Count} projects");
+        _logger.LogInformation($"{source}: Remove {projectsToRemove.Count} projects");
 
         await _writeContext.SaveChangesAsync();
         _logger.LogInformation($"{source}: Persisted changes");
 
-        await _realtimeMessagesPort.ProjectsRemoved(removedProjects.Where(p => p.Tags.Count > 0));
-        _logger.LogInformation($"{source}: Published realtime {removedProjects.Count} removed projects");
+        await _realtimeMessagesPort.ProjectsRemoved(projectsToRemove.Where(p => p.Tags.Count > 0));
+        _logger.LogInformation($"{source}: Published realtime {projectsToRemove.Count} removed projects");
     }
 }
