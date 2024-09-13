@@ -11,7 +11,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
     public async Task<string?> Get(
         string url,
         (HttpClient httpClient, ProxyData proxyData)? httpClientAndProxy = null,
-        int tryNumber = 2)
+        int tryNumber = 1)
     {
         httpClientAndProxy ??= await _httpClientFactory.CreateWithProxy();
         var httpClient = httpClientAndProxy.Value.httpClient;
@@ -25,7 +25,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
         catch (Exception e)
         {
             await proxyData.IncrementFails();
-            _logger.LogInformation($"Failed getting page ({proxyData.Fails}) with {proxyData.Ip}:{proxyData.Port} from {url}");
+            _logger.LogInformation($"Failed getting page try: {tryNumber}, proxy: {proxyData.Fails} fails with {proxyData.Ip}:{proxyData.Port} from {url}");
             if (tryNumber < 20)
             {
                 return await Get(url, null, tryNumber + 1);
@@ -39,7 +39,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
     public async Task<HtmlDocument?> GetHtml(
         string url,
         (HttpClient httpClient, ProxyData proxyData)? httpClientAndProxy = null,
-        int tryNumber = 2)
+        int tryNumber = 1)
     {
         httpClientAndProxy ??= await _httpClientFactory.CreateWithProxy();
         var html = await Get(url, httpClientAndProxy);
@@ -57,7 +57,7 @@ public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
         catch (Exception e)
         {
             await httpClientAndProxy.Value.proxyData.IncrementFails();
-            _logger.LogInformation($"Failed getting html ({httpClientAndProxy.Value.proxyData.Fails}) with {httpClientAndProxy.Value.proxyData.Ip}:{httpClientAndProxy.Value.proxyData.Port} from {url}");
+            _logger.LogInformation($"Failed getting page try: {tryNumber}, proxy: {httpClientAndProxy.Value.proxyData.Fails} fails with {httpClientAndProxy.Value.proxyData.Ip}:{httpClientAndProxy.Value.proxyData.Port} from {url}");
             if (tryNumber < 20)
             {
                 return await GetHtml(url, null, tryNumber + 1);
