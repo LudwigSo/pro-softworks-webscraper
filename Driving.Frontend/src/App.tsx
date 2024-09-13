@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Button } from "./components/ui/button";
 import { tagApi } from "./api-configs";
-import { CreateTagCommand, Tag, TagCreatePostRequest } from "./api";
+import { Tag } from "./api";
 import { Input } from "./components/ui/input";
 
 function App() {
