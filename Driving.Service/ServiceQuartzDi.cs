@@ -11,15 +11,15 @@ internal static class ServiceQuartzDi
         services.AddScoped<FreelanceDeWebscraperJob>();
         services.AddQuartz(config =>
         {
-            config.ScheduleJob<HaysWebscraperJob>(trigger => 
+            config.ScheduleJob<HaysWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("HaysWebscraperJob")
-                    .WithCronSchedule("0 */16 * * * ?")
+                    .WithCronSchedule("0 */10 * * * ?")
             );
             config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
-                    .WithCronSchedule("0 */12 * * * ?")
+                    .WithCronSchedule("0 */6 * * * ?")
             );
             config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
                 trigger
@@ -29,12 +29,13 @@ internal static class ServiceQuartzDi
             config.ScheduleJob<FreelancerMapOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelancerMapOnlyNewWebscraperJob")
-                    .WithCronSchedule("0 */10 * * * ?")
+                    .WithCronSchedule("0 */5 * * * ?")
             );
             config.ScheduleJob<FreelancerMapWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelancerMapWebscraperJob")
                     .WithCronSchedule("0 25 */11 * * ?")
+                    //.StartNow()
             );
         });
         services.AddQuartzHostedService(opt =>
