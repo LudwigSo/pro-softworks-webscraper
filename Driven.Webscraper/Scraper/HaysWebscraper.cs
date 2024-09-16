@@ -6,21 +6,22 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
+public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSearchSiteBasedWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
+    private readonly ProjectSource _projectSource = ProjectSource.Hays;
     private readonly List<string> _haysSpezialisierungsUrls =
     [
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwarearchitekt/4002EE17-5727-44F8-A5DF-CB51F4D64097/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwaretester/5E0C2C71-2260-4C1A-A4CD-62E7FABF0D63/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Architekt/7FA1A118-D0EA-445C-AFA9-BFA05F3A36BF/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Applikationsingenieur/E9BF9DE1-89BA-42FA-8DB3-70C4E43D1443/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Cloud-Engineer/4F70CA09-E2E8-4AAC-9B54-5F900246F844/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/IT-Berater/B0C4E890-8BCF-4D2A-A5FB-63B26B5C4150/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwarearchitekt/4002EE17-5727-44F8-A5DF-CB51F4D64097/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwaretester/5E0C2C71-2260-4C1A-A4CD-62E7FABF0D63/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Architekt/7FA1A118-D0EA-445C-AFA9-BFA05F3A36BF/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Applikationsingenieur/E9BF9DE1-89BA-42FA-8DB3-70C4E43D1443/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Cloud-Engineer/4F70CA09-E2E8-4AAC-9B54-5F900246F844/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/IT-Berater/B0C4E890-8BCF-4D2A-A5FB-63B26B5C4150/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
     ];
 
     public async Task<List<Project>> Scrape()
@@ -28,53 +29,14 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
         var projects = new List<Project>();
         foreach (var spezialisierungUrl in _haysSpezialisierungsUrls)
         {
-            var projectsForSpezialisierung = await ScrapeSpezialisierung(spezialisierungUrl);
+            var projectsForSpezialisierung = await ScrapeSearchSiteParallel(spezialisierungUrl);
             projects.AddRange(projectsForSpezialisierung);
         }
 
         return projects;
     }
 
-    private async Task<List<Project>> ScrapeSpezialisierung(string spezialisierungUrl)
-    {
-        var (numberOfEntries, mainPage) = await ScrapeNumberOfProjects(spezialisierungUrl);
-        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
-
-        var scrapePageTasks = new List<Task<List<Project>>>();
-        for (var page = 0; page < numberOfPages; page++)
-        {
-            scrapePageTasks.Add(ScrapeSearchPage(mainPage, page));
-        }
-        Task.WaitAll([.. scrapePageTasks]);
-        return scrapePageTasks.SelectMany(t => t.Result).ToList();
-    }
-
-    private async Task<List<Project>> ScrapeSearchPage(HtmlDocument mainPage, int page)
-    {
-        var projectUrlsFromPage = (page == 0) ? ExtractProjectUrls(mainPage) : await ScrapeProjectUrlsFromSearchSite(page);
-        return await ScrapeProjectsByUrl(projectUrlsFromPage);
-    }
-
-    private async Task<List<Project>> ScrapeProjectsByUrl(string[] projectUrls)
-    {
-        var projectScrapeTasks = new List<Task<Project?>>();
-        foreach (var projectUrl in projectUrls)
-        {
-            projectScrapeTasks.Add(ScrapeProject(projectUrl));
-        }
-
-        List<Project> projects = new();
-        foreach (var projectScrapeTask in projectScrapeTasks)
-        {
-            var project = await projectScrapeTask;
-            if (project == null) continue;
-            projects.Add(project);
-        }
-
-        return projects;
-    }
-
-    private async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
+    protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
     {
         try
         {
@@ -95,7 +57,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
-    private async Task<(int, HtmlDocument)> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
+    protected override async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
     {
         try
         {
@@ -103,7 +65,9 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
             var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = innerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
-            return (int.Parse(innerText), mainPage);
+            var amountOfProjects = int.Parse(innerText);
+            _logger.LogInformation($"{_projectSource}: {amountOfProjects} projects found, retry: {retry}, url {categoryUrl}");
+            return amountOfProjects;
         }
         catch
         {
@@ -112,11 +76,11 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
         }
     }
 
-    private async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {
-            _logger.LogInformation($"Scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogDebug($"{_projectSource}: Start to scrape project, retry: {retry}, url {projectUrl}");
             var projectSite = await _httpHelper.GetHtml(projectUrl);
 
             var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
@@ -153,11 +117,12 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
                 jobLocation: jobLocationString
             );
 
+            _logger.LogInformation($"{_projectSource}: Succeeded scraping project, retry: {retry}, url {projectUrl}");
             return project;
         }
         catch
         {
-            _logger.LogInformation($"Error scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogDebug($"{_projectSource}: Failed scraping project, retry: {retry}, url {projectUrl}");
             if (retry > 2) return null;
             return await ScrapeProject(projectUrl, retry + 1);
         }
