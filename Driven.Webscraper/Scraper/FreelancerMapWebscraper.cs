@@ -51,7 +51,7 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : Ab
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = RemoveAnyNonNumber(innerText);
             var amountOfProjects = int.Parse(innerText);
-            _logger.LogInformation($"{_projectSource}: {amountOfProjects} projects found, retry: {retry}, url {categoryUrl}");
+            _logger.LogInformation($"{_projectSource}: {amountOfProjects} projects found, retry: {retry}, url {url}");
             return amountOfProjects;
         }
         catch
