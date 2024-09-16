@@ -8,119 +8,66 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IWebscraper
+public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSearchSiteBasedWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
+    private readonly ProjectSource _projectSource = ProjectSource.FreelancerMap;
     private readonly string _url = "http://www.freelancermap.de/projektboerse.html?categories%5B0%5D=1&projectContractTypes%5B0%5D=contracting&remoteInPercent%5B0%5D=100&remoteInPercent%5B1%5D=1&countries%5B%5D=1&countries%5B%5D=2&countries%5B%5D=3&sort=1&pagenr=1";
 
-
-    public async Task<List<Project>> Scrape()
+    public Task<List<Project>> Scrape()
     {
-        var (numberOfEntries, mainPage) = await ScrapeNumberOfProjects();
-        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
-
-        var scrapePageTasks = new List<Task<List<Project>>>();
-        for (var page = 0; page < numberOfPages; page++)
-        {
-            scrapePageTasks.Add(ScrapeSearchPage(mainPage, page));
-        }
-        Task.WaitAll([.. scrapePageTasks]);
-        return scrapePageTasks.SelectMany(t => t.Result).ToList();
+        return ScrapeSearchSiteParallel(_url);
     }
 
-    public async Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
+    public Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
     {
-        if (lastScrapedProject == null) return await Scrape();
-
-        var lastScrapedAt = lastScrapedProject.PostedAt;
-        var (numberOfEntries, mainPage) = await ScrapeNumberOfProjects();
-        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
-
-        var projects = new List<Project>();
-        for (var page = 0; page < numberOfPages; page++)
-        {
-            var projectUrlsFromPage = (page == 0) ? ExtractProjectUrls(mainPage) : await ScrapeProjectUrlsFromSearchSite(page);
-            var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage);
-            projects.AddRange(projectsFromPage);
-
-            var lastProject = projectsFromPage.Last();
-            if (lastProject.PostedAt < lastScrapedAt) break;
-        }
-        return projects;
+        return ScrapeSearchSiteOnlyNew(_url, lastScrapedProject);
     }
 
-    private async Task<List<Project>> ScrapeSearchPage(HtmlDocument mainPage, int page)
-    {
-        var projectUrlsFromPage = (page == 0) ? ExtractProjectUrls(mainPage) : await ScrapeProjectUrlsFromSearchSite(page);
-        return await ScrapeProjectsByUrl(projectUrlsFromPage);
-    }
-
-    private async Task<List<Project>> ScrapeProjectsByUrl(string[] projectUrls)
-    {
-        var projectScrapeTasks = new List<Task<Project?>>();
-        foreach (var projectUrl in projectUrls)
-        {
-            projectScrapeTasks.Add(ScrapeProject(projectUrl));
-        }
-
-        List<Project> projects = new();
-        foreach (var projectScrapeTask in projectScrapeTasks)
-        {
-            var project = await projectScrapeTask;
-            if (project == null) continue;
-            projects.Add(project);
-        }
-
-        return projects;
-    }
-
-    private async Task<string[]> ScrapeProjectUrlsFromSearchSite(int page = 0, int retry = 0)
+    protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string url, int page = 0, int retry = 0)
     {
         try
         {
-            var url = $"{_url}&pagenr={page +1}";
-            var document = await _httpHelper.GetHtml(url);
-            return ExtractProjectUrls(document);
+            var fullUrl = $"{url}&pagenr={page +1}";
+            var document = await _httpHelper.GetHtml(fullUrl);
+            var projectUrlNodes = document.DocumentNode.SelectNodes("//h2/a[@class='project-title']");
+            return projectUrlNodes.Select(url => "http://www.freelancermap.de" + url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
         }
         catch
         {
             if (retry > 3) throw;
-            return await ScrapeProjectUrlsFromSearchSite(page, retry + 1);
+            return await ScrapeProjectUrlsFromSearchSite(url, page, retry + 1);
         }
     }
 
-    private static string[] ExtractProjectUrls(HtmlDocument document)
-    {
-        var projectUrlNodes = document.DocumentNode.SelectNodes("//h2/a[@class='project-title']");
-        return projectUrlNodes.Select(url => "http://www.freelancermap.de" + url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
-    }
-
-    private async Task<(int, HtmlDocument)> ScrapeNumberOfProjects(int retry = 0)
+    protected override async Task<int> ScrapeNumberOfProjects(string url, int retry = 0)
     {
         try
         {
-            var mainPage = await _httpHelper.GetHtml(_url);
+            var mainPage = await _httpHelper.GetHtml(url);
             var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='search-result-header']/div/h1");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = RemoveAnyNonNumber(innerText);
-            return (int.Parse(innerText), mainPage);
+            var amountOfProjects = int.Parse(innerText);
+            _logger.LogInformation($"{_projectSource}: {amountOfProjects} projects found, retry: {retry}, url {categoryUrl}");
+            return amountOfProjects;
         }
         catch
         {
             if (retry > 3) throw;
-            return await ScrapeNumberOfProjects(retry + 1);
+            return await ScrapeNumberOfProjects(url, retry + 1);
         }
     }
 
     private static string RemoveAnyNonNumber(string str) => Regex.Replace(str, @"\D", "");
 
-    private async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {
-            _logger.LogInformation($"Scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogDebug($"{_projectSource}: Start to scrape project, retry: {retry}, url {projectUrl}");
             var projectSite = await _httpHelper.GetHtml(projectUrl);
 
             var title = projectSite.DocumentNode.SelectSingleNode("//h1").InnerText?.Trim();
@@ -166,12 +113,12 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : IW
                 postedAt: postedAt
             );
 
-            _logger.LogInformation($"Success scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogInformation($"{_projectSource}: Succeeded scraping project, retry: {retry}, url {projectUrl}");
             return project;
         }
         catch
         {
-            _logger.LogInformation($"Error scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogDebug($"{_projectSource}: Failed scraping project, retry: {retry}, url {projectUrl}");
             if (retry > 2) return null;
             return await ScrapeProject(projectUrl, retry + 1);
         }
