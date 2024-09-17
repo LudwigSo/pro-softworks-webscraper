@@ -14,14 +14,14 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
     private readonly ProjectSource _projectSource = ProjectSource.Hays;
     private readonly List<string> _haysSpezialisierungsUrls =
     [
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwarearchitekt/4002EE17-5727-44F8-A5DF-CB51F4D64097/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwaretester/5E0C2C71-2260-4C1A-A4CD-62E7FABF0D63/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Architekt/7FA1A118-D0EA-445C-AFA9-BFA05F3A36BF/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Applikationsingenieur/E9BF9DE1-89BA-42FA-8DB3-70C4E43D1443/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Cloud-Engineer/4F70CA09-E2E8-4AAC-9B54-5F900246F844/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/IT-Berater/B0C4E890-8BCF-4D2A-A5FB-63B26B5C4150/j/Contracting/3/p/1?q=&e=false&pt=false",
-        "http://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwareentwickler/8D391CE4-6175-469A-936E-CA694A52E8AC/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwarearchitekt/4002EE17-5727-44F8-A5DF-CB51F4D64097/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Softwaretester/5E0C2C71-2260-4C1A-A4CD-62E7FABF0D63/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Architekt/7FA1A118-D0EA-445C-AFA9-BFA05F3A36BF/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Applikationsingenieur/E9BF9DE1-89BA-42FA-8DB3-70C4E43D1443/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Cloud-Engineer/4F70CA09-E2E8-4AAC-9B54-5F900246F844/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/IT-Berater/B0C4E890-8BCF-4D2A-A5FB-63B26B5C4150/j/Contracting/3/p/1?q=&e=false&pt=false",
+        "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
     ];
 
     public async Task<List<Project>> Scrape()
@@ -41,7 +41,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         try
         {
             var url = $"{spezialisierungUrl}/j/Contracting/3/p/{page + 1}?q=&e=false&pt=false";
-            var document = await _httpHelper.GetHtml(url);
+            var document = await _httpHelper.GetHtml(url, withProxy: false);
             return ExtractProjectUrls(document);
         }
         catch
@@ -61,7 +61,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
     {
         try
         {
-            var mainPage = await _httpHelper.GetHtml(categoryUrl);
+            var mainPage = await _httpHelper.GetHtml(categoryUrl, withProxy: false);
             var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = innerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
@@ -81,7 +81,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         try
         {
             _logger.LogDebug($"{_projectSource}: Start to scrape project, retry: {retry}, url {projectUrl}");
-            var projectSite = await _httpHelper.GetHtml(projectUrl);
+            var projectSite = await _httpHelper.GetHtml(projectUrl, withProxy: false);
 
             var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
 
