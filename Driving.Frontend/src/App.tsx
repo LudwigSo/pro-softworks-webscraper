@@ -15,17 +15,16 @@ function App() {
     setData(null);
     try {
       const tags = await tagApi.tagAllGet();
-      setData(tags);
+      setData(tags.data);
     } catch (error) {
       alert(error);
     } finally {
       setLoading(false);
     }
   }
-
   async function addTag() {
     try {
-      await tagApi.tagCreatePost({ createTagCommand: { name: inputValue } });
+      await tagApi.tagCreatePost({ name: inputValue });
       fetchData();
     } catch (error) {
       alert(error);
