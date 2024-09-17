@@ -1,50 +1,132 @@
 ﻿using Domain.Ports;
 using HtmlAgilityPack;
+using PlainHttp;
+using System;
 
 namespace Driven.Webscraper.Proxy;
 
-public record ProxyResponse(HtmlDocument HtmlDocument, ProxyData UsedProxy);
-
-public class HttpHelper(ILogger logger, HttpClientFactory httpClientFactory)
+public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly HttpClientFactory _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+    private readonly IProxyLoader _proxyLoader = proxyLoader ?? throw new ArgumentNullException(nameof(proxyLoader));
+    private ProxyData[] _proxies = [];
+    private readonly Random _random = new();
+    private readonly SemaphoreSlim _getHtmlSemaphore = new(1, 1);
 
-    public async Task<HtmlDocument> GetHtml(
-        string url,
-        (HttpClient HttpClient, ProxyData ProxyData)? httpClientAndProxy = null,
-        int tryNumber = 1)
+    public async Task<HtmlDocument> GetHtml(string url, bool withProxy = true, int retry = 0)
     {
-        httpClientAndProxy ??= await _httpClientFactory.CreateWithProxy();
-        var httpClient = httpClientAndProxy.Value.HttpClient;
-        var proxyData = httpClientAndProxy.Value.ProxyData;
+        if (withProxy && _proxies.Length == 0)
+        {
+            await _getHtmlSemaphore.WaitAsync();
+            try
+            {
+                await InitializeProxies();
+                if (_proxies.Length == 0) throw new InvalidOperationException("no proxies available");
+            }
+            finally
+            {
+                _getHtmlSemaphore.Release();
+            }
+        }
 
-        var htmlDocument = new HtmlDocument();
+        ProxyData? proxyData = null;
+        HtmlDocument htmlDocument;
         try
         {
-            var response = await httpClientAndProxy.Value.HttpClient.GetAsync(url);
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            htmlDocument.LoadHtml(responseString);
-            if (htmlDocument.ParseErrors.Any()) throw new InvalidDataException("Parse errors during LoadHtml exist.");
-            if (htmlDocument.DocumentNode.SelectSingleNode("//body") == null) throw new InvalidDataException("No body tag found in document.");
-            if (htmlDocument.ParsedText.Contains("Internal Server Error") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Internal Server Error in document.");
-            if (htmlDocument.ParsedText.Contains("502 Bad Gateway") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Bad Gateway Error in document.");
-            await proxyData.IncrementSuccess();
-            _logger.LogDebug($"Succeeded getting html page try: {tryNumber}, {proxyData.ToLog()}, from {url}");
+            proxyData = withProxy ? NextRandomProxyData() : null;
+            htmlDocument = await GetHtml(url, proxyData);
+            _logger.LogDebug($"Succeeded getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
         }
         catch (Exception e)
         {
-            await proxyData.IncrementFails();
-            _logger.LogDebug($"Failed getting html page try: {tryNumber}, {proxyData.ToLog()}, from {url}");
-            if (tryNumber < 10)
+            if (proxyData != null) await proxyData.IncrementFails();
+
+            _logger.LogDebug($"Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
+            if (retry < 10)
             {
-                return await GetHtml(url, null, tryNumber + 1);
+                return await GetHtml(url, withProxy, retry + 1);
             }
-            _logger.LogError(e.Message);
+            _logger.LogError($"Fatal Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url} with message {e.Message}");
             throw;
         }
 
         return htmlDocument;
+    }
+
+    public async Task InitializeProxies()
+    {
+        _logger.LogInformation("Start to initialize proxies");
+        _proxies = await _proxyLoader.LoadAvailableProxies();
+        if (_proxies.Length == 0) throw new InvalidOperationException("no proxies available");
+        
+        _logger.LogInformation($"{_proxies.Length} proxies were found");
+
+        var proxyTasks = new List<Task>();
+        foreach (var proxy in _proxies)
+        {
+            var task = TestProxy(proxy);
+            proxyTasks.Add(task);
+        }
+        Task.WaitAll([.. proxyTasks]);
+
+        _proxies = _proxies.Where(p => p.Fails == 0).ToArray();
+        _logger.LogInformation($"{_proxies.Length} proxies responded");
+    }
+
+    internal async Task TestProxy(ProxyData proxyData)
+    {
+        try
+        {
+            await GetHtml("http://ping.eu/proxy/", proxyData);
+            await proxyData.IncrementSuccess();
+            _logger.LogDebug($"Succeeded proxytest: {proxyData.ToLog()}");
+        }
+        catch
+        {
+            await proxyData.IncrementFails();
+            _logger.LogDebug($"Failed proxytest: {proxyData.ToLog()}");
+        }
+    }
+
+    internal async Task<HtmlDocument> GetHtml(string url, ProxyData? proxyData)
+    {
+        var htmlDocument = new HtmlDocument();
+        var request = NewRequest(url, proxyData);
+        var response = await request.SendAsync();
+        if (response.Succeeded == false) throw new InvalidOperationException($"Request failed with status code {response.StatusCode}.");
+        var responseString = await response.ReadString();
+
+        htmlDocument.LoadHtml(responseString.Trim());
+        //if (htmlDocument.ParseErrors.Any()) throw new InvalidDataException("Parse errors during LoadHtml exist.");
+        if (htmlDocument.DocumentNode.SelectSingleNode("//body") == null) throw new InvalidDataException("No body tag found in document.");
+        if (htmlDocument.ParsedText.Contains("Internal Server Error") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Internal Server Error in document.");
+        if (htmlDocument.ParsedText.Contains("502 Bad Gateway") && htmlDocument.ParsedText.Length < 250) throw new InvalidDataException("Bad Gateway Error in document.");
+
+        return htmlDocument;
+    }
+
+    internal HttpRequest NewRequest(string url, ProxyData? proxyData)
+    {
+        var request = new HttpRequest(url);
+        request.Method = HttpMethod.Get;
+        request.Timeout = TimeSpan.FromSeconds(10);
+        request.Headers = new Dictionary<string, string>()
+        {
+            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" }
+        };
+        if (proxyData != null)
+        {
+            var proxyUriBuilder = new UriBuilder(proxyData.Ip);
+            proxyUriBuilder.Port = proxyData.Port;
+            request.Proxy = proxyUriBuilder.Uri;
+        }
+        return request;
+    }
+
+    internal ProxyData NextRandomProxyData()
+    {
+        var availableProxies = _proxies.Where(p => p.IsAvailable()).ToArray();
+        if (availableProxies.Length == 0) throw new InvalidOperationException($"{_proxies.Length} proxies in memory, but 0 fulfill available criteria");
+        return availableProxies[_random.Next(availableProxies.Length)];
     }
 }
