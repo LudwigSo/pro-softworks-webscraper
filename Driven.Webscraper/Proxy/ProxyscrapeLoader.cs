@@ -54,13 +54,10 @@ public class ProxyscrapeLoader : IProxyLoader
             var protocol = proxyData.GetProperty("protocol").GetString();
             if (protocol != "http") continue;
 
-            var averageTimeout = proxyData.GetProperty("average_timeout").GetDouble();
-            if (averageTimeout > 1000) continue;
-
             var alive = proxyData.GetProperty("alive").GetBoolean();
             if (!alive) continue;
 
-            yield return new ProxyData(ip, port, averageTimeout);
+            yield return new ProxyData(ip, port);
         }
     }
 }

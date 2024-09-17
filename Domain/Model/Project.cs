@@ -70,7 +70,7 @@ public class Project
         IsActive = false;
     }
 
-    internal bool IsSameProject(Project other)
+    public bool IsSameProject(Project other)
     {
         if (Source != other.Source) return false;
         if (ProjectIdentifier != other.ProjectIdentifier) return false;

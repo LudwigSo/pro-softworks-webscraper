@@ -4,11 +4,6 @@ using Driven.Webscraper.Proxy;
 
 namespace Driven.Webscraper.Scraper;
 
-public interface IWebscraper
-{
-    Task<List<Project>> Scrape();
-}
-
 public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscraperPort
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -18,7 +13,7 @@ public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscra
     {
         return source switch
         {
-            ProjectSource.Hays => new HaysWebscraper(_logger).Scrape(),
+            ProjectSource.Hays => new HaysWebscraper(_logger, _httpHelper).Scrape(),
             ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).Scrape(),
             ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).Scrape(),
             _ => throw new NotImplementedException()
