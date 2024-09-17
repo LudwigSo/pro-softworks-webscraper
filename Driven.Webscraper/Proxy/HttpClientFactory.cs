@@ -27,8 +27,8 @@ public class HttpClientFactory(IProxyLoader proxyLoader)
 
     internal ProxyData NextRandomProxyData(int failThreshold)
     {
-        var availableProxies = _proxies.Where(p => p.Fails < failThreshold).ToArray();
-        if (availableProxies.Length == 0) throw new InvalidOperationException($"no proxies with less than {failThreshold} available");
+        var availableProxies = _proxies.Where(p => p.IsAvailable()).ToArray();
+        if (availableProxies.Length == 0) throw new InvalidOperationException($"{_proxies.Length} proxies in memory, but 0 fulfill available criteria");
         return availableProxies[_random.Next(availableProxies.Length)];
     }
 }
