@@ -11,7 +11,6 @@ public static class WebscraperDi
     {
         services.AddScoped<IWebscraperPort, WebscraperFactory>();
         services.AddSingleton<IProxyLoader, ProxyscrapeLoader>();
-        services.AddSingleton<HttpClientFactory>();
         services.AddSingleton<HttpHelper>();
 
         return services;
