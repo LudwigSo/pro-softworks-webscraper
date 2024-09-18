@@ -25,12 +25,13 @@ public class ScrapeAndProcessCommandHandlerTests
         var fakeSignalR = A.Fake<IRealtimeMessagesPort>();
         var fakeWriteContext = A.Fake<IWriteContext>();
         var fakeProjectQueries = A.Fake<IProjectQueriesPort>();
+        var fakeTagQueries = A.Fake<ITagQueriesPort>();
         A.CallTo(() => fakeProjectQueries.GetActiveBySource(ProjectSource.Hays)).Returns([]);
 
         var fakeWebscraperPort = A.Fake<IWebscraperPort>();
         A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).Returns(scrapedProjects);
 
-        var handler = new ScrapeAndProcessCommandHandler(fakeLogger, fakeWebscraperPort, fakeProjectQueries, fakeWriteContext, fakeSignalR);
+        var handler = new ScrapeAndProcessCommandHandler(fakeLogger, fakeWebscraperPort, fakeProjectQueries, fakeTagQueries, fakeWriteContext, fakeSignalR);
         var command = new ScrapeAndProcessCommand(ProjectSource.Hays);
 
         // Act

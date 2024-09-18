@@ -6,6 +6,7 @@ namespace Driven.Logging.Serilog;
 public class SerilogLogger : Domain.Ports.ILogger
 {
     private readonly Logger _logger = new LoggerConfiguration()
+        .MinimumLevel.Debug()
         .WriteTo.Console()
         .WriteTo.File("/app/logs/log.txt",
             rollingInterval: RollingInterval.Day,

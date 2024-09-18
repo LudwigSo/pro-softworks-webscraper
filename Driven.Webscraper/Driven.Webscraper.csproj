@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.62" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="PlainHttp" Version="2.0.0" />
   </ItemGroup>
 
   <PropertyGroup>
