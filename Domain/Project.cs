@@ -47,18 +47,11 @@ public class Project
         foreach (var tag in tags)
         {
             if (existingTags.Contains(tag.Id)) continue;
-            if (TagIsApplicable(tag))
+            if (tag.IsApplicable(Title) || tag.IsApplicable(Description) || tag.IsApplicable(Url))
             {
                 Tags.Add(tag);
             }
         }
-    }
-
-    private bool TagIsApplicable(Tag tag)
-    {
-        if (Title.Contains(tag.Name, StringComparison.OrdinalIgnoreCase)) return true;
-        if (Description?.Contains(tag.Name, StringComparison.OrdinalIgnoreCase) ?? false) return true;
-        return false;
     }
 
     public bool IsSameProject(Project other)
