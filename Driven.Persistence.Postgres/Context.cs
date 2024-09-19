@@ -10,7 +10,7 @@ public class Context : DbContext
 
     public DbSet<Project> Projects { get; init; }
     public DbSet<Tag> Tags { get; init; }
-    public DbSet<Tag> Keywords { get; init; }
+    public DbSet<Keyword> Keywords { get; init; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,31 +63,31 @@ public class Context : DbContext
         });
 
         modelBuilder.Entity<Keyword>().HasData(
-            new Keyword("c#")       { Id = 1, TagId = 1 },
-            new Keyword("csharp")   { Id = 2, TagId = 1 },
-            new Keyword("c-sharp")  { Id = 3, TagId = 1 },
-            new Keyword("aspnet")   { Id = 4, TagId = 1 },
-            new Keyword("dotnet")   { Id = 5, TagId = 1 },
+            new Keyword(1, "c#")       { Id = 1 },
+            new Keyword(1, "csharp")   { Id = 2 },
+            new Keyword(1, "c-sharp")  { Id = 3 },
+            new Keyword(1, "aspnet")   { Id = 4 },
+            new Keyword(1, "dotnet")   { Id = 5 },
 
-            new Keyword("ddd")                  { Id = 6, TagId = 2 },
-            new Keyword("domaindrivendesign")   { Id = 7, TagId = 2 },
-            new Keyword("domain-driven-design") { Id = 8, TagId = 2 },
-            new Keyword("eric evans")           { Id = 9, TagId = 2 },
-            new Keyword("ericevans")            { Id = 10, TagId = 2 },
-            new Keyword("eric-evans")           { Id = 11, TagId = 2 },
-            new Keyword("portsandadapters")     { Id = 12, TagId = 2 },
-            new Keyword("ports&adapters")       { Id = 13, TagId = 2 },
-            new Keyword("ports-and-adapters")   { Id = 14, TagId = 2 },
-            new Keyword("hexagonal")            { Id = 15, TagId = 2 },
-            new Keyword("clean")                { Id = 16, TagId = 2 },
-            new Keyword("layered")              { Id = 17, TagId = 2 },
+            new Keyword(2, "ddd")                  { Id = 6 },
+            new Keyword(2, "domaindrivendesign")   { Id = 7 },
+            new Keyword(2, "domain-driven-design") { Id = 8 },
+            new Keyword(2, "eric evans")           { Id = 9 },
+            new Keyword(2, "ericevans")            { Id = 10 },
+            new Keyword(2, "eric-evans")           { Id = 11 },
+            new Keyword(2, "portsandadapters")     { Id = 12 },
+            new Keyword(2, "ports&adapters")       { Id = 13 },
+            new Keyword(2, "ports-and-adapters")   { Id = 14 },
+            new Keyword(2, "hexagonal")            { Id = 15 },
+            new Keyword(2, "clean")                { Id = 16 },
+            new Keyword(2, "layered")              { Id = 17 },
 
-            new Keyword("vuejs")        { Id = 18, TagId = 3 },
-            new Keyword("vue.js")       { Id = 19, TagId = 3 },
-            new Keyword("vuetify")      { Id = 20, TagId = 3 },
-            new Keyword("javascript")   { Id = 21, TagId = 3 },
-            new Keyword("typscript")    { Id = 22, TagId = 3 },
-            new Keyword("figma")        { Id = 23, TagId = 3 }
+            new Keyword(3, "vuejs")        { Id = 18 },
+            new Keyword(3, "vue.js")       { Id = 19 },
+            new Keyword(3, "vuetify")      { Id = 20 },
+            new Keyword(3, "javascript")   { Id = 21 },
+            new Keyword(3, "typscript")    { Id = 22 },
+            new Keyword(3, "figma")        { Id = 23 }
         );
     }
 }
