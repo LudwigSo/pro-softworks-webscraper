@@ -1,5 +1,5 @@
-﻿using Domain.Model;
-using Domain.Ports;
+﻿using Domain;
+using Application.Ports;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Driven.RealtimeMessages.SignalR;

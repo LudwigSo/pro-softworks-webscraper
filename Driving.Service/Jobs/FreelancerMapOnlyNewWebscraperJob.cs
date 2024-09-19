@@ -1,5 +1,5 @@
-﻿using Domain.CommandHandlers;
-using Domain.Model;
+﻿using Domain;
+using Application.CommandHandlers;
 using Quartz;
 
 namespace Driving.Service.Jobs;

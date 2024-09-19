@@ -3,32 +3,43 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driving.Console", "Driving.Console\Driving.Console.csproj", "{605D8E1E-E3EA-4E72-BD1C-EEBB533FECEB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{91A3B325-7B6A-46F9-BFA1-6067E86F4917}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Persistence.Postgres", "Driven.Persistence.Postgres\Driven.Persistence.Postgres.csproj", "{92F167F2-FCBA-4EFB-9A5D-E5FB4F838EC3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Webscraper", "Driven.Webscraper\Driven.Webscraper.csproj", "{8FE3C3CA-703F-4EE0-A65D-FF3232CA7BC1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F} = {AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.Logging.Serilog", "Driven.Logging.Serilog\Driven.Logging.Serilog.csproj", "{F6CBD521-80B8-4F2E-BB83-21EE07133726}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F} = {AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driving.Service", "Driving.Service\Driving.Service.csproj", "{A4351D3C-24CE-4A07-8CC8-9C50D592F710}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F} = {AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}
+	EndProjectSection
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{AE8F53C3-68E9-44A9-A582-274C3D39CB16}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driven.RealtimeMessages.SignalR", "Driven.RealtimeMessages.SignalR\Driven.RealtimeMessages.SignalR.csproj", "{DF8590BE-E7CF-42BF-BACC-EB258DFD4C52}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.Test", "Domain.Test\Domain.Test.csproj", "{D53C12C6-71FA-4EFA-A509-AF7842D23AE5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F} = {AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Driving.Api", "Driving.Api\Driving.Api.csproj", "{143575D3-3966-4E0E-A52E-90AFF645FDD2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F} = {AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7F876D65-377F-4B70-9A55-CEEF713E8C9D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driven.Webscraper.Test", "Driven.Webscraper.Test\Driven.Webscraper.Test.csproj", "{74C8E99B-1021-4853-8312-E14503419902}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,10 +47,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{605D8E1E-E3EA-4E72-BD1C-EEBB533FECEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{605D8E1E-E3EA-4E72-BD1C-EEBB533FECEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{605D8E1E-E3EA-4E72-BD1C-EEBB533FECEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{605D8E1E-E3EA-4E72-BD1C-EEBB533FECEB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{91A3B325-7B6A-46F9-BFA1-6067E86F4917}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{91A3B325-7B6A-46F9-BFA1-6067E86F4917}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91A3B325-7B6A-46F9-BFA1-6067E86F4917}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -68,18 +75,14 @@ Global
 		{DF8590BE-E7CF-42BF-BACC-EB258DFD4C52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF8590BE-E7CF-42BF-BACC-EB258DFD4C52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF8590BE-E7CF-42BF-BACC-EB258DFD4C52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D53C12C6-71FA-4EFA-A509-AF7842D23AE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D53C12C6-71FA-4EFA-A509-AF7842D23AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D53C12C6-71FA-4EFA-A509-AF7842D23AE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D53C12C6-71FA-4EFA-A509-AF7842D23AE5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{143575D3-3966-4E0E-A52E-90AFF645FDD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{143575D3-3966-4E0E-A52E-90AFF645FDD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{143575D3-3966-4E0E-A52E-90AFF645FDD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{143575D3-3966-4E0E-A52E-90AFF645FDD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{74C8E99B-1021-4853-8312-E14503419902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{74C8E99B-1021-4853-8312-E14503419902}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{74C8E99B-1021-4853-8312-E14503419902}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{74C8E99B-1021-4853-8312-E14503419902}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA0CC402-82D3-47E9-8DB1-9D6AABAD368F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

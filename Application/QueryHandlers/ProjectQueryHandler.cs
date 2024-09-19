@@ -1,10 +1,10 @@
-﻿using Domain.Model;
-using Domain.Ports.Queries;
+﻿using Domain;
+using Driven.Persistence.Postgres;
 using Microsoft.EntityFrameworkCore;
 
-namespace Driven.Persistence.Postgres.Queries
+namespace Application.QueryHandlers
 {
-    public class ProjectQueries(Context context) : IProjectQueriesPort
+    public class ProjectQueryHandler(Context context)
     {
         private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 

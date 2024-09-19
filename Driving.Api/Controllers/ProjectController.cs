@@ -1,6 +1,6 @@
-using Domain.CommandHandlers;
-using Domain.Model;
-using Domain.Ports.Queries;
+using Domain;
+using Application.CommandHandlers;
+using Application.QueryHandlers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Driving.Api.Controllers
@@ -8,19 +8,19 @@ namespace Driving.Api.Controllers
     [ApiController]
     [Route("[controller]/[action]/")]
     public class ProjectController(
-        IProjectQueriesPort projectQueries, 
-        RetagCommandHandler retagCommandHandler
+        ProjectQueryHandler projectQueryHandler, 
+        TagCommandHandler tagCommandHandler
     ) : ControllerBase
     {
-        private readonly IProjectQueriesPort _projectQueries = projectQueries ?? throw new ArgumentNullException(nameof(projectQueries));
-        private readonly RetagCommandHandler _retagCommandHandler = retagCommandHandler ?? throw new ArgumentNullException(nameof(retagCommandHandler));
+        private readonly ProjectQueryHandler _projectQueryHandler = projectQueryHandler ?? throw new ArgumentNullException(nameof(projectQueryHandler));
+        private readonly TagCommandHandler _tagCommandHandler = tagCommandHandler ?? throw new ArgumentNullException(nameof(tagCommandHandler));
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Project>), StatusCodes.Status200OK)]
-        public async Task<IEnumerable<Project>> AllActiveWithAnyTag() => await _projectQueries.GetActiveWithAnyTag();
+        public async Task<IEnumerable<Project>> AllActiveWithAnyTag() => await _projectQueryHandler.GetActiveWithAnyTag();
 
         [HttpPost]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        public async Task Retag() => await _retagCommandHandler.Handle(new RetagCommand());
+        public async Task Retag() => await tagCommandHandler.Handle(new RetagCommand());
     }
 }

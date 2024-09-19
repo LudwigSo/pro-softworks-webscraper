@@ -1,4 +1,4 @@
-using Domain.Ports;
+using Application.Ports;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Driven.Logging.Serilog;
