@@ -1,26 +1,19 @@
 ﻿using Domain;
 using Driven.Persistence.Postgres;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 
 namespace Application.QueryHandlers
 {
+    public record ProjectsWithAnyTagQuery(DateTime Since);
+
     public class ProjectQueryHandler(Context context)
     {
         private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 
-        public Task<Project[]> GetActiveBySource(ProjectSource source)
-            => _context.Projects.Include(p => p.Tags).Where(x => x.Source == source && x.RemovedAt == null).ToArrayAsync();
-
-        public Task<Project?> GetLastScrapedBySource(ProjectSource source)
-            => _context.Projects.Include(p => p.Tags).Where(x => x.Source == source && x.RemovedAt == null).OrderByDescending(x => x.PostedAt).FirstOrDefaultAsync();
-
-        public Task<Project[]> GetActiveWithAnyTag()
-            => _context.Projects.Include(p => p.Tags).Where(x => x.RemovedAt == null && x.Tags.Count != 0).ToArrayAsync();
-
-        public Task<Project[]> GetAll(int page, int skipPerPage, int take)
-            => _context.Projects.Include(p => p.Tags).OrderBy(p => p.Id).Skip(page * skipPerPage).Take(take).ToArrayAsync();
-
-        public Task<int> GetProjectCount()
-            => _context.Projects.CountAsync();
+        public Task<Project[]> Handle(ProjectsWithAnyTagQuery query)
+        {
+            return _context.Projects.Include(p => p.Tags).Where(x => x.FirstSeenAt >= query.Since && x.Tags.Count != 0).ToArrayAsync();
+        }
     }
 }

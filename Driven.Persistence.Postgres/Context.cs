@@ -28,7 +28,6 @@ public class Context : DbContext
             entity.Property(e => e.PlannedStart).HasColumnType("timestamp");
             entity.Property(e => e.PostedAt).HasColumnType("timestamp");
             entity.Property(e => e.FirstSeenAt).HasColumnType("timestamp").IsRequired();
-            entity.Property(e => e.RemovedAt).HasColumnType("timestamp");
 
             entity.HasMany(e => e.Tags)
                 .WithMany()
