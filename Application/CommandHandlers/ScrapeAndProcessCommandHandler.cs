@@ -55,7 +55,7 @@ public class ScrapeAndProcessCommandHandler(
             return;
         }
 
-        var allTags = await _dbContext.Tags.ToArrayAsync();
+        var allTags = await _dbContext.Tags.Include(t => t.Keywords).ToArrayAsync();
         foreach (var project in projects)
         {
             project.EvaluateAndAddTags(allTags);
