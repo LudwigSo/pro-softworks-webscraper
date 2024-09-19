@@ -10,6 +10,7 @@ public class Context : DbContext
 
     public DbSet<Project> Projects { get; init; }
     public DbSet<Tag> Tags { get; init; }
+    public DbSet<Tag> Keywords { get; init; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,6 +45,15 @@ public class Context : DbContext
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.Name).HasMaxLength(50).IsRequired();
+            entity.HasMany(e => e.Keywords).WithOne().HasForeignKey(k => k.TagId);
+        });
+
+        modelBuilder.Entity<Keyword>(entity =>
+        {
+            entity.ToTable("Keyword");
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Value).HasMaxLength(50).IsRequired();
         });
     }
 }
