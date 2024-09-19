@@ -20,7 +20,7 @@ public class TagController(
     [ProducesResponseType(typeof(IEnumerable<TagDto>), StatusCodes.Status200OK)]
     public async Task<IEnumerable<TagDto>> All() => await _tagQueryHandler.Handle(new AllTagsQuery());
 
-    [Route("/{id}")]
+    [Route("{id}")]
     [HttpDelete]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     public async Task Delete(int id) => await _tagCommandHandler.Handle(new DeleteTagCommand(id));
