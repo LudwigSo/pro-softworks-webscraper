@@ -1,4 +1,4 @@
-﻿using Domain.Ports;
+﻿using Application.Ports;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;

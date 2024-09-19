@@ -1,8 +1,8 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Domain.Model;
-using Domain.Ports;
+using Domain;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 using Flurl;
 using HtmlAgilityPack;
@@ -17,10 +17,10 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : Ab
     private readonly ProjectSource _projectSource = ProjectSource.FreelancerMap;
     private readonly string _url = "http://www.freelancermap.de/projektboerse.html?categories%5B0%5D=1&projectContractTypes%5B0%5D=contracting&remoteInPercent%5B0%5D=100&remoteInPercent%5B1%5D=1&countries%5B%5D=1&countries%5B%5D=2&countries%5B%5D=3&sort=1&pagenr=1";
 
-    public async Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
+    public async Task<List<Project>> ScrapeOnlyNew()
     {
         var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(_url);
-        var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage);
+        var projectsFromPage = await ScrapeProjectsByUrlParallel(projectUrlsFromPage);
         return projectsFromPage;
     }
 

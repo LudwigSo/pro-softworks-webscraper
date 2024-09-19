@@ -1,4 +1,4 @@
-﻿using Domain.Ports;
+﻿using Application.Ports;
 using HtmlAgilityPack;
 using PlainHttp;
 using System;

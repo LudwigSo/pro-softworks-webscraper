@@ -1,4 +1,4 @@
-namespace Domain.Model;
+namespace Domain;
 
 public class Project
 {
@@ -37,13 +37,13 @@ public class Project
         PostedAt = postedAt;
     }
 
-    internal void ReTag(Tag[] tags)
+    public void ReTag(Tag[] tags)
     {
         Tags.Clear();
         EvaluateAndAddTags(tags);
     }
 
-    internal void EvaluateAndAddTags(Tag[] tags)
+    public void EvaluateAndAddTags(Tag[] tags)
     {
         var existingTags = Tags.Select(t => t.Id).ToArray();
         foreach (var tag in tags)
@@ -55,7 +55,7 @@ public class Project
             }
         }
     }
-    
+
     private bool TagIsApplicable(Tag tag)
     {
         if (Title.Contains(tag.Name, StringComparison.OrdinalIgnoreCase)) return true;
