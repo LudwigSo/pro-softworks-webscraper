@@ -12,7 +12,7 @@ public class KeywordController(KeywordCommandHandler keywordCommandHandler) : Co
 {
     private readonly KeywordCommandHandler _keywordCommandHandler = keywordCommandHandler ?? throw new ArgumentNullException(nameof(keywordCommandHandler));
 
-    [Route("/{id}")]
+    [Route("{id}")]
     [HttpDelete]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     public async Task Delete(int id) => await _keywordCommandHandler.Handle(new DeleteKeywordCommand(id));
