@@ -48,6 +48,12 @@ public class Context : DbContext
             entity.HasMany(e => e.Keywords).WithOne().HasForeignKey(k => k.TagId);
         });
 
+        modelBuilder.Entity<Tag>().HasData(
+            new Tag("C#")           { Id = 1},
+            new Tag("Architecture") { Id = 2},
+            new Tag("UI")           { Id = 3}
+        );
+
         modelBuilder.Entity<Keyword>(entity =>
         {
             entity.ToTable("Keyword");
@@ -55,5 +61,33 @@ public class Context : DbContext
 
             entity.Property(e => e.Value).HasMaxLength(50).IsRequired();
         });
+
+        modelBuilder.Entity<Keyword>().HasData(
+            new Keyword("c#")       { Id = 1, TagId = 1 },
+            new Keyword("csharp")   { Id = 2, TagId = 1 },
+            new Keyword("c-sharp")  { Id = 3, TagId = 1 },
+            new Keyword("aspnet")   { Id = 4, TagId = 1 },
+            new Keyword("dotnet")   { Id = 5, TagId = 1 },
+
+            new Keyword("ddd")                  { Id = 6, TagId = 2 },
+            new Keyword("domaindrivendesign")   { Id = 7, TagId = 2 },
+            new Keyword("domain-driven-design") { Id = 8, TagId = 2 },
+            new Keyword("eric evans")           { Id = 9, TagId = 2 },
+            new Keyword("ericevans")            { Id = 10, TagId = 2 },
+            new Keyword("eric-evans")           { Id = 11, TagId = 2 },
+            new Keyword("portsandadapters")     { Id = 12, TagId = 2 },
+            new Keyword("ports&adapters")       { Id = 13, TagId = 2 },
+            new Keyword("ports-and-adapters")   { Id = 14, TagId = 2 },
+            new Keyword("hexagonal")            { Id = 15, TagId = 2 },
+            new Keyword("clean")                { Id = 16, TagId = 2 },
+            new Keyword("layered")              { Id = 17, TagId = 2 },
+
+            new Keyword("vuejs")        { Id = 18, TagId = 3 },
+            new Keyword("vue.js")       { Id = 19, TagId = 3 },
+            new Keyword("vuetify")      { Id = 20, TagId = 3 },
+            new Keyword("javascript")   { Id = 21, TagId = 3 },
+            new Keyword("typscript")    { Id = 22, TagId = 3 },
+            new Keyword("figma")        { Id = 23, TagId = 3 }
+        );
     }
 }
