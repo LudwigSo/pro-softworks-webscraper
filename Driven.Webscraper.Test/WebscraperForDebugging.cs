@@ -5,7 +5,7 @@ namespace Driven.Webscraper.Test
 {
     public class WebscraperForDebugging : IWebscraperPort
     {
-        public async Task<List<Project>> Scrape(ProjectSource source)
+        public async Task<List<Project>> Scrape(ProjectSource source, Project? lastScrapedProject)
         {
             return new List<Project>
             {

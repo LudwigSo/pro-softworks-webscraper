@@ -33,7 +33,7 @@ var serviceProvider = serviceCollection.BuildServiceProvider();
 
 var webscraper = serviceProvider.GetRequiredService<IWebscraperPort>();
 
-var projects = await webscraper.Scrape(ProjectSource.FreelanceDe);
+var projects = await webscraper.Scrape(ProjectSource.FreelanceDe, null);
 
 
 

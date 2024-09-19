@@ -7,8 +7,6 @@ internal static class ServiceQuartzDi
 {    
     internal static IServiceCollection AddServiceQuartz(this IServiceCollection services)
     {
-        services.AddScoped<HaysWebscraperJob>();
-        services.AddScoped<FreelanceDeWebscraperJob>();
         services.AddQuartz(config =>
         {
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
@@ -21,21 +19,10 @@ internal static class ServiceQuartzDi
                     .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
                     .WithCronSchedule("0 */6 * * * ?")
             );
-            config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
-                trigger
-                    .WithIdentity("FreelanceDeWebscraperJob")
-                    .WithCronSchedule("0 25 */12 * * ?")
-            );
             config.ScheduleJob<FreelancerMapOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelancerMapOnlyNewWebscraperJob")
                     .WithCronSchedule("0 */5 * * * ?")
-            );
-            config.ScheduleJob<FreelancerMapWebscraperJob>(trigger =>
-                trigger
-                    .WithIdentity("FreelancerMapWebscraperJob")
-                    .WithCronSchedule("0 25 */11 * * ?")
-                    //.StartNow()
             );
         });
         services.AddQuartzHostedService(opt =>
@@ -47,8 +34,6 @@ internal static class ServiceQuartzDi
 
     internal static IServiceCollection AddServiceQuartzForDebugging(this IServiceCollection services)
     {
-        services.AddScoped<HaysWebscraperJob>();
-        services.AddScoped<FreelanceDeWebscraperJob>();
         services.AddQuartz(config =>
         {
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
@@ -56,9 +41,9 @@ internal static class ServiceQuartzDi
                     .WithIdentity("HaysWebscraperJob")
                     .WithCronSchedule("0 */1 * * * ?")
             );
-            config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
+            config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>
                 trigger
-                    .WithIdentity("FreelanceDeWebscraperJob")
+                    .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
                     .WithCronSchedule("0 */2 * * * ?")
             );
         });

@@ -8,5 +8,5 @@ namespace Driving.Service.Jobs;
 internal class FreelancerMapOnlyNewWebscraperJob(ScrapeAndProcessCommandHandler scrapeAndProcessCommandHandler) : IJob
 {
     private ScrapeAndProcessCommandHandler ScrapeAndProcessCommandHandler { get; } = scrapeAndProcessCommandHandler ?? throw new ArgumentNullException(nameof(scrapeAndProcessCommandHandler));
-    public async Task Execute(IJobExecutionContext context) => await ScrapeAndProcessCommandHandler.Handle(new ScrapeAndProcessOnlyNewCommand(ProjectSource.FreelancerMap));
+    public async Task Execute(IJobExecutionContext context) => await ScrapeAndProcessCommandHandler.Handle(new ScrapeAndProcessCommand(ProjectSource.FreelancerMap));
 }
