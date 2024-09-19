@@ -11,10 +11,5 @@ public class ProjectHub(IHubContext<ProjectHub> hubContext) : Hub, IRealtimeMess
     {
         await _hubContext.Clients.All.SendAsync("NewProjectsAdded", projects);
     }
-
-    public async Task ProjectsRemoved(IEnumerable<Project> projects)
-    {
-        await _hubContext.Clients.All.SendAsync("ProjectsRemoved", projects);
-    }
 }
     
