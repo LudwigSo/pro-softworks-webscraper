@@ -1,17 +1,19 @@
-﻿using Domain;
+﻿using Application.QueryHandlers.Dtos;
+using Domain;
 using Driven.Persistence.Postgres;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.QueryHandlers
+namespace Application.QueryHandlers;
+
+public record AllTagsQuery();
+public class TagQueryHandler(Context context)
 {
-    public class TagQueryHandler(Context context)
-    {
-        private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly Context _context = context ?? throw new ArgumentNullException(nameof(context));
 
-        public Task<Tag[]> GetAllTags()
-            => _context.Tags.ToArrayAsync();
+    public Task<TagDto[]> Handle(AllTagsQuery query)
+        => _context.Tags.Include(t => t.Keywords).Select(t => TagDto.From(t)).ToArrayAsync();
+        
 
-        public Task<Tag?> GetTag(int id)
-            => _context.Tags.SingleOrDefaultAsync(x => x.Id == id);
-    }
+    public Task<Tag?> GetTag(int id)
+        => _context.Tags.SingleOrDefaultAsync(x => x.Id == id);
 }
