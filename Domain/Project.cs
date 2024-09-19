@@ -12,8 +12,6 @@ public class Project
     public DateTime? PlannedStart { get; }
     public DateTime? PostedAt { get; }
     public DateTime FirstSeenAt { get; } = DateTime.Now;
-    public DateTime? RemovedAt { get; private set; }
-    public bool IsActive { get; private set; } = true;
     public List<Tag> Tags { get; } = new();
 
     public Project(
@@ -61,13 +59,6 @@ public class Project
         if (Title.Contains(tag.Name, StringComparison.OrdinalIgnoreCase)) return true;
         if (Description?.Contains(tag.Name, StringComparison.OrdinalIgnoreCase) ?? false) return true;
         return false;
-    }
-
-    internal void MarkAsRemoved()
-    {
-        if (RemovedAt.HasValue && IsActive == false) throw new InvalidOperationException("Project is already removed");
-        RemovedAt = DateTime.Now;
-        IsActive = false;
     }
 
     public bool IsSameProject(Project other)

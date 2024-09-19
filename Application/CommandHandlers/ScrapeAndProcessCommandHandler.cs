@@ -26,10 +26,9 @@ public class ScrapeAndProcessCommandHandler(
     {
         _logger.LogInformation($"{command.Source}: Handle {nameof(ScrapeAndProcessCommand)}");
 
-
         var recentProjects = await _dbContext.Projects
             .Include(p => p.Tags)
-            .Where(x => x.Source == command.Source && x.PostedAt.HasValue && x.PostedAt > _timeProvider.GetLocalNow().AddDays(-7))
+            .Where(x => x.Source == command.Source && x.PostedAt.HasValue && x.FirstSeenAt > _timeProvider.GetLocalNow().AddDays(-7))
             .ToArrayAsync();
 
         List<Project> projects;

@@ -26,7 +26,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
         foreach (var categoryUrl in _categoryUrls)
         {
             var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(categoryUrl);
-            var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage, delayPerProjectInMs: 2000);
+            var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage, recentProjects: recentProjects, delayPerProjectInMs: 2000);
             projects.AddRange(projectsFromPage);
         }
 

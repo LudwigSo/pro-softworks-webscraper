@@ -12,17 +12,17 @@ internal static class ServiceQuartzDi
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("HaysWebscraperJob")
-                    .WithCronSchedule("0 */10 * * * ?")
+                    .WithCronSchedule("0 */8 * * * ?")
             );
             config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
-                    .WithCronSchedule("0 */6 * * * ?")
+                    .WithCronSchedule("0 */5 * * * ?")
             );
             config.ScheduleJob<FreelancerMapOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelancerMapOnlyNewWebscraperJob")
-                    .WithCronSchedule("0 */5 * * * ?")
+                    .WithCronSchedule("0 */4 * * * ?")
             );
         });
         services.AddQuartzHostedService(opt =>
