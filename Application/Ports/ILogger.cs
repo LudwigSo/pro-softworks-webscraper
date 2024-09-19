@@ -1,4 +1,4 @@
-namespace Domain.Ports;
+namespace Application.Ports;
 
 public interface ILogger
 {

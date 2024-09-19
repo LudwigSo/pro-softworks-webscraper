@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
-using Domain.Model;
-using Domain.Ports;
+using Domain;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 
 namespace Driven.Webscraper.Scraper;
@@ -20,7 +20,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte"
     ];
 
-    public async Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
+    public async Task<List<Project>> ScrapeOnlyNew(Project[]? recentProjects)
     {
         var projects = new List<Project>();
         foreach (var categoryUrl in _categoryUrls)

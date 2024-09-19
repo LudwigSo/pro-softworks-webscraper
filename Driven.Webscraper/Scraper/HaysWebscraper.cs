@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Domain.Model;
-using Domain.Ports;
+using Domain;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 using HtmlAgilityPack;
 

@@ -3,7 +3,7 @@ using Serilog.Core;
 
 namespace Driven.Logging.Serilog;
 
-public class SerilogLogger : Domain.Ports.ILogger
+public class SerilogLogger : Application.Ports.ILogger
 {
     private readonly Logger _logger = new LoggerConfiguration()
         .MinimumLevel.Information()

@@ -1,4 +1,4 @@
-using Domain.Ports;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 using Driven.Webscraper.Scraper;
 using Microsoft.Extensions.DependencyInjection;

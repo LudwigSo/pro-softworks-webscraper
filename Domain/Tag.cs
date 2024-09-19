@@ -1,4 +1,4 @@
-﻿namespace Domain.Model;
+﻿namespace Domain;
 
 public class Tag(string name)
 {
