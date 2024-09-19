@@ -9,12 +9,12 @@ public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscra
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
-    public Task<List<Project>> Scrape(ProjectSource source, Project[]? recentFreelanceDeProjects = null)
+    public Task<List<Project>> Scrape(ProjectSource source, Project[]? recentProjects = null)
     {
         return source switch
         {
             ProjectSource.Hays => new HaysWebscraper(_logger, _httpHelper).Scrape(),
-            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(recentFreelanceDeProjects),
+            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(recentProjects),
             ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).ScrapeOnlyNew(),
             _ => throw new NotImplementedException()
         };

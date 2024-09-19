@@ -25,7 +25,7 @@ public abstract class AbstractCommonWebscraper
         return projects;
     }
 
-    protected async Task<List<Project>> ScrapeProjectsByUrl(string[] projectUrls, List<Project>? recentFreelanceDeProjects = null, int delayPerProjectInMs = 0)
+    protected async Task<List<Project>> ScrapeProjectsByUrl(string[] projectUrls, Project[]? recentProjects = null, int delayPerProjectInMs = 0)
     {
         List<Project> projects = new();
 
@@ -36,7 +36,7 @@ public abstract class AbstractCommonWebscraper
 
             projects.Add(project);
 
-            if (recentFreelanceDeProjects != null && recentFreelanceDeProjects.Any(p => p.IsSameProject(project))) break;
+            if (recentProjects != null && recentProjects.Any(p => p.IsSameProject(project))) break;
             if (delayPerProjectInMs > 0) await Task.Delay(delayPerProjectInMs);
         }
 

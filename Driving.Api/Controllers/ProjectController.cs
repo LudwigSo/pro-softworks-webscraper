@@ -17,7 +17,11 @@ namespace Driving.Api.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Project>), StatusCodes.Status200OK)]
-        public async Task<IEnumerable<Project>> AllActiveWithAnyTag() => await _projectQueryHandler.GetActiveWithAnyTag();
+        public async Task<IEnumerable<Project>> AllWithAnyTag(DateTime? since = null)
+        {
+            var query = new ProjectsWithAnyTagQuery(since ?? TimeProvider.System.GetLocalNow().DateTime.AddDays(-7));
+            return await _projectQueryHandler.Handle(query);
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]

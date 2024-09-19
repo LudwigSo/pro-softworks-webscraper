@@ -8,6 +8,8 @@ public static class ApplicationDi
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped(_ => TimeProvider.System);
+
         services.AddScoped<ScrapeAndProcessCommandHandler>();
         services.AddScoped<TagCommandHandler>();
 
