@@ -2,6 +2,7 @@ using Domain;
 using Application.CommandHandlers;
 using Application.QueryHandlers;
 using Microsoft.AspNetCore.Mvc;
+using Application.QueryHandlers.Dtos;
 
 namespace Driving.Api.Controllers;
 
@@ -16,8 +17,8 @@ public class ProjectController(
     private readonly TagCommandHandler _tagCommandHandler = tagCommandHandler ?? throw new ArgumentNullException(nameof(tagCommandHandler));
 
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<Project>), StatusCodes.Status200OK)]
-    public async Task<IEnumerable<Project>> AllWithAnyTag(DateTime? since = null)
+    [ProducesResponseType(typeof(IEnumerable<ProjectDto>), StatusCodes.Status200OK)]
+    public async Task<IEnumerable<ProjectDto>> AllWithAnyTag(DateTime? since = null)
     {
         var query = new ProjectsWithAnyTagQuery(since ?? TimeProvider.System.GetLocalNow().DateTime.AddDays(-7));
         return await _projectQueryHandler.Handle(query);
