@@ -29,7 +29,7 @@ public class ScrapeAndProcessCommandHandlerTests
         A.CallTo(() => fakeProjectQueries.GetActiveBySource(ProjectSource.Hays)).Returns([]);
 
         var fakeWebscraperPort = A.Fake<IWebscraperPort>();
-        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).Returns(scrapedProjects);
+        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays, null)).Returns(scrapedProjects);
 
         var handler = new ScrapeAndProcessCommandHandler(fakeLogger, fakeWebscraperPort, fakeProjectQueries, fakeTagQueries, fakeWriteContext, fakeSignalR);
         var command = new ScrapeAndProcessCommand(ProjectSource.Hays);
@@ -38,7 +38,7 @@ public class ScrapeAndProcessCommandHandlerTests
         await handler.Handle(command);
 
         // Assert
-        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => fakeWebscraperPort.Scrape(ProjectSource.Hays, null)).MustHaveHappenedOnceExactly();
         A.CallTo(() => fakeWriteContext.AddRange(scrapedProjects)).MustHaveHappenedOnceExactly();
         A.CallTo(() => fakeWriteContext.SaveChangesAsync()).MustHaveHappenedOnceExactly();
         A.CallTo(() => fakeSignalR.NewProjectsAdded(scrapedProjects)).MustHaveHappenedOnceExactly();

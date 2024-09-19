@@ -23,22 +23,12 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte/"
     ];
 
-    public async Task<List<Project>> Scrape()
-    {
-        var projects = new List<Project>();
-        foreach (var kategorieUrl in _categoryUrls)
-        {
-            var projectsForCategory = await ScrapeSearchSiteParallel(kategorieUrl);
-            projects.AddRange(projectsForCategory);
-        }
-
-        return projects.Distinct().ToList();
-    }
+    public override int DelayPerProjectInMs => 2000;
+    public override int DelayPerSiteInMs => 10000;
+    public  int DelayRetryGetHtmlInMs => 5000;
 
     public async Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
     {
-        if (lastScrapedProject == null) return await Scrape();
-
         var projects = new List<Project>();
         foreach (var categoryUrl in _categoryUrls)
         {
@@ -98,7 +88,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
         try
         {
             _logger.LogDebug($"{_projectSource}: Start to scrape project, retry: {retry}, url {projectUrl}");
-            var projectSite = await _httpHelper.GetHtml(projectUrl);
+            var projectSite = await _httpHelper.GetHtml(projectUrl, retryDelayInMs: DelayRetryGetHtmlInMs);
 
             var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText;
             var identifier = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Referenz-Nummer']/parent::li")?.InnerText?.Trim();
