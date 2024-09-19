@@ -79,4 +79,6 @@ public class Project
 
         return true;
     }
+
+    public string ToLogMessage() => $"{Source}; {PostedAt}; ({Url})";
 }
