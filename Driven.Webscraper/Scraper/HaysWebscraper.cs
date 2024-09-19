@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSearchSiteBasedWebscraper
+public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractCommonWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
@@ -57,7 +57,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         return await ScrapeProjectsByUrl(projectUrlsFromPage);
     }
 
-    protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
+    protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
     {
         try
         {
@@ -78,7 +78,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
-    protected override async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
+    protected async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
     {
         try
         {
@@ -138,7 +138,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
                 jobLocation: jobLocationString
             );
 
-            _logger.LogInformation($"{_projectSource}: Succeeded scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogInformation($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");
             return project;
         }
         catch

@@ -1,15 +1,12 @@
-using System;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Domain.Model;
 using Domain.Ports;
 using Driven.Webscraper.Proxy;
-using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSearchSiteBasedWebscraper
+public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractCommonWebscraper
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
@@ -19,33 +16,31 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
     [
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Softwareentwicklung-Softwareprogrammierung-Projekte",
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Softwarearchitektur-Softwareanalyse-Projekte",
-        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/User-Interface-User-Experience-Projekte/",
-        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte/"
+        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/User-Interface-User-Experience-Projekte",
+        "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte"
     ];
-
-    public override int DelayPerProjectInMs => 2000;
-    public override int DelayPerSiteInMs => 10000;
-    public  int DelayRetryGetHtmlInMs => 5000;
 
     public async Task<List<Project>> ScrapeOnlyNew(Project? lastScrapedProject)
     {
         var projects = new List<Project>();
         foreach (var categoryUrl in _categoryUrls)
         {
-            var projectsForKategorie = await ScrapeSearchSiteOnlyNew(categoryUrl, lastScrapedProject);
-            projects.AddRange(projectsForKategorie);
+            var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(categoryUrl);
+            var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage, delayPerProjectInMs: 2000);
+            projects.AddRange(projectsFromPage);
         }
 
         return projects.Distinct().ToList();
     }
 
-    protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string categoryUrl, int page = 0, int retry = 0)
+    protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string categoryUrl, int page = 0, int retry = 0)
     {
         try
         {
             var url = $"{categoryUrl}/?_offset={(page) * 20}";
             var document = await _httpHelper.GetHtml(url);
-            return ExtractProjectUrls(document);
+            var projectUrlNodes = document.DocumentNode.SelectNodes("//a[starts-with(@id, 'project_link_')]");
+            return projectUrlNodes.Select(url => "http://www.freelance.de" + url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
         }
         catch
         {
@@ -54,41 +49,12 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
         }
     }
 
-    private static string[] ExtractProjectUrls(HtmlDocument document)
-    {
-        var projectUrlNodes = document.DocumentNode.SelectNodes("//a[starts-with(@id, 'project_link_')]");
-        return projectUrlNodes.Select(url => "http://www.freelance.de" + url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
-    }
-
-    protected override async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
-    {
-        try
-        {
-            var mainPage = await _httpHelper.GetHtml(categoryUrl);
-            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@id='pagination']/p");
-            var innerText = numberOfEntriesDiv.InnerText.Trim();
-            innerText = RemoveNumberOfProjectsPrefix(innerText);
-            innerText = RemoveAnyNonNumber(innerText);
-            var amountOfProjects = int.Parse(innerText);
-            _logger.LogInformation($"{_projectSource}: {amountOfProjects} projects found, retry: {retry}, url {categoryUrl}");
-            return amountOfProjects;
-        }
-        catch
-        {
-            if (retry > 3) throw;
-            return await ScrapeNumberOfProjects(categoryUrl, retry + 1);
-        }
-    }
-
-    private static string RemoveNumberOfProjectsPrefix(string str) => Regex.Replace(str, @"Projekte:  \d{1,4}-\d{2,4} von ", "");
-    private static string RemoveAnyNonNumber(string str) => Regex.Replace(str, @"\D", "");
-
     protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {
             _logger.LogDebug($"{_projectSource}: Start to scrape project, retry: {retry}, url {projectUrl}");
-            var projectSite = await _httpHelper.GetHtml(projectUrl, retryDelayInMs: DelayRetryGetHtmlInMs);
+            var projectSite = await _httpHelper.GetHtml(projectUrl, retryDelayInMs: 2000);
 
             var title = projectSite!.DocumentNode.SelectSingleNode("//h1").InnerText;
             var identifier = projectSite.DocumentNode.SelectSingleNode("//i[@data-original-title='Referenz-Nummer']/parent::li")?.InnerText?.Trim();
@@ -135,7 +101,7 @@ public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : Abst
                 postedAt: postedAt
             );
 
-            _logger.LogInformation($"{_projectSource}: Succeeded scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogInformation($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");
             return project;
         }
         catch
