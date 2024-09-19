@@ -9,7 +9,9 @@ public static class PersistencePostgresDi
     public static IServiceCollection AddPersistencePostgres(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<Context>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+            options
+                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
         );
         return services;
     }
