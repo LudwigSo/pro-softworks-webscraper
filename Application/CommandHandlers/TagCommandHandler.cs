@@ -40,13 +40,13 @@ public class TagCommandHandler(ILogger logger, Context dbContext)
     {
         var projectCount = await _dbContext.Projects.CountAsync();
         _logger.LogInformation($"Retagging {projectCount} projects");
-        var allTags = await _dbContext.Tags.ToArrayAsync();
+        var allTags = await _dbContext.Tags.Include(t => t.Keywords).ToArrayAsync();
 
         var page = 0;
         while (projectCount > 0)
         {
             var countToFetch = Math.Min(1000, projectCount);
-            var projects = await _dbContext.Projects.Include(p => p.Tags).OrderBy(p => p.Id).Skip(page * 1000).Take(countToFetch).ToArrayAsync();
+            var projects = await _dbContext.Projects.AsTracking().Include(p => p.Tags).OrderBy(p => p.Id).Skip(page * 1000).Take(countToFetch).ToArrayAsync();
             foreach (var project in projects)
             {
                 project.ReTag(allTags);
