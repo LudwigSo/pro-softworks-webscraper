@@ -8,6 +8,7 @@ public class ProxyData(string ip, int port)
     public int Port { get; } = port;
     public int Fails { get; private set; }
     public int Success { get; private set; }
+    public int TotalSuccess => Success - Fails;
 
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 

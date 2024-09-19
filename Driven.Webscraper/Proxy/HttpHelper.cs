@@ -13,7 +13,7 @@ public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
     private readonly Random _random = new();
     private readonly SemaphoreSlim _getHtmlSemaphore = new(1, 1);
 
-    public async Task<HtmlDocument> GetHtml(string url, bool withProxy = true, int retry = 0)
+    public async Task<HtmlDocument> GetHtml(string url, bool withProxy = true, int retry = 0, int retryDelayInMs = 0)
     {
         if (withProxy && _proxies.Length == 0)
         {
@@ -35,18 +35,20 @@ public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
         {
             proxyData = withProxy ? NextRandomProxyData() : null;
             htmlDocument = await GetHtml(url, proxyData);
-            _logger.LogDebug($"Succeeded getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
+            if (proxyData != null) await proxyData.IncrementSuccess();
+            _logger.LogDebug($"Succeeded getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url}");
         }
         catch (Exception e)
         {
             if (proxyData != null) await proxyData.IncrementFails();
 
-            _logger.LogDebug($"Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
+            _logger.LogDebug($"Failed getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url}");
             if (retry < 10)
             {
+                if (retryDelayInMs > 0) await Task.Delay(retryDelayInMs);
                 return await GetHtml(url, withProxy, retry + 1);
             }
-            _logger.LogError($"Fatal Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url} with message {e.Message}");
+            _logger.LogError($"Fatal Failed getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url} with message {e.Message}");
             throw;
         }
 
@@ -125,8 +127,9 @@ public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
 
     internal ProxyData NextRandomProxyData()
     {
-        var availableProxies = _proxies.Where(p => p.IsAvailable()).ToArray();
-        if (availableProxies.Length == 0) throw new InvalidOperationException($"{_proxies.Length} proxies in memory, but 0 fulfill available criteria");
+        if (_proxies.Length == 0) throw new InvalidOperationException($"{_proxies.Length} proxies in memory");
+        var averageProxySuccess = _proxies.OrderByDescending(p => p.TotalSuccess).ToArray()[Math.Max(0, (_proxies.Length/2)-1)].TotalSuccess;
+       var availableProxies = _proxies.Where(p => p.TotalSuccess >= averageProxySuccess).ToArray();
         return availableProxies[_random.Next(availableProxies.Length)];
     }
 }

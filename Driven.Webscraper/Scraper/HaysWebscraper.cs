@@ -36,6 +36,27 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         return projects;
     }
 
+    protected async Task<List<Project>> ScrapeSearchSiteParallel(string url, int projectsPerPage = 20)
+    {
+        var numberOfEntries = await ScrapeNumberOfProjects(url);
+        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / projectsPerPage);
+
+        var scrapePageTasks = new List<Task<List<Project>>>();
+        for (var page = 0; page < numberOfPages; page++)
+        {
+            var task = ScrapeSearchPage(url, page);
+            scrapePageTasks.Add(task);
+        }
+        Task.WaitAll([.. scrapePageTasks]);
+        return scrapePageTasks.SelectMany(t => t.Result).ToList();
+    }
+
+    protected virtual async Task<List<Project>> ScrapeSearchPage(string url, int page)
+    {
+        var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(url, page);
+        return await ScrapeProjectsByUrl(projectUrlsFromPage);
+    }
+
     protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
     {
         try
