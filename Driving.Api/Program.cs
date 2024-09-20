@@ -28,7 +28,7 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddPersistencePostgres(configuration)
-    .AddLoggingSerilog()
+    .AddLoggingSerilog(configuration)
     .AddApplicationServices();
 
 var app = builder.Build();

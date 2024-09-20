@@ -19,7 +19,7 @@ builder = builder.ConfigureServices((context, services) =>
 {
     services.AddPersistencePostgres(configuration)
         .AddApplicationServices()
-        .AddLoggingSerilog()
+        .AddLoggingSerilog(configuration)
         .AddWebscraper()
         .AddServiceQuartz();
 });
