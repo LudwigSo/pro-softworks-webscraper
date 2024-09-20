@@ -8,7 +8,7 @@ public static class LoggingSerilogDi
 {
     public static IServiceCollection AddLoggingSerilog(this IServiceCollection services, IConfigurationRoot configuration)
     {
-        services.AddSingleton<ILogger>(l => new SerilogLogger(configuration));
+        services.AddSingleton<ILogging>(l => new SerilogLogger(configuration));
 
         return services;
     }

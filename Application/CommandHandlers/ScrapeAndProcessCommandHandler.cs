@@ -8,14 +8,14 @@ namespace Application.CommandHandlers;
 public sealed record ScrapeAndProcessCommand(ProjectSource Source);
 
 public class ScrapeAndProcessCommandHandler(
-    ILogger logger,
+    ILogging logger,
     Context dbContext,
     IWebscraperPort webscraperPort,
     IRealtimeMessagesPort realtimeMessagesPort,
     TimeProvider timeProvider
     )
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly Context _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     private readonly IWebscraperPort _webscraperPort = webscraperPort ?? throw new ArgumentNullException(nameof(webscraperPort));
     private readonly IRealtimeMessagesPort _realtimeMessagesPort = realtimeMessagesPort ?? throw new ArgumentNullException(nameof(realtimeMessagesPort));
@@ -28,7 +28,7 @@ public class ScrapeAndProcessCommandHandler(
 
         var recentProjects = await _dbContext.Projects
             .Include(p => p.Tags)
-            .Where(x => x.Source == command.Source && x.PostedAt.HasValue && x.FirstSeenAt > _timeProvider.GetLocalNow().AddDays(-7))
+            .Where(x => x.Source == command.Source && x.FirstSeenAt > _timeProvider.GetLocalNow().AddDays(-7))
             .ToArrayAsync();
 
         List<Project> projects;

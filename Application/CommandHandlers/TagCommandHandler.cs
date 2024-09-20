@@ -9,9 +9,9 @@ public record CreateTagCommand(string Name);
 public record DeleteTagCommand(int Id);
 public record RetagCommand();
 
-public class TagCommandHandler(ILogger logger, Context dbContext)
+public class TagCommandHandler(ILogging logger, Context dbContext)
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly Context _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 
     public async Task Handle(CreateTagCommand command)

@@ -17,6 +17,7 @@ internal static class ServiceQuartzDi
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("HaysWebscraperJob")
+                    .StartNow()
                     .WithCronSchedule("0 */8 * * * ?")
             );
             config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>

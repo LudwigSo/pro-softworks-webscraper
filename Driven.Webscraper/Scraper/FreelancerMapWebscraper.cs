@@ -9,9 +9,9 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractCommonWebscraper
+public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly ProjectSource _projectSource = ProjectSource.FreelancerMap;

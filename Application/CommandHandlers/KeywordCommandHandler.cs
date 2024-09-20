@@ -7,9 +7,9 @@ namespace Application.CommandHandlers;
 public record CreateKeywordCommand(int TagId, string Value);
 public record DeleteKeywordCommand(int Id);
 
-public class KeywordCommandHandler(ILogger logger, Context dbContext)
+public class KeywordCommandHandler(ILogging logger, Context dbContext)
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly Context _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 
     public async Task Handle(CreateKeywordCommand command)
