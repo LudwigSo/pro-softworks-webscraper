@@ -6,9 +6,9 @@ using Driven.Webscraper.Proxy;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractCommonWebscraper
+public class FreelanceDeWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly ProjectSource _projectSource = ProjectSource.FreelanceDe;

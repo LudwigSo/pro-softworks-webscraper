@@ -26,13 +26,19 @@ public class Project
     )
     {
         Source = source;
-        Title = title;
+        Title = LimitString(title, 500);
         Url = url;
-        ProjectIdentifier = projectIdentifier;
-        Description = description;
-        JobLocation = jobLocation;
+        ProjectIdentifier = LimitString(projectIdentifier, 200);
+        Description = LimitString(description, 5000);
+        JobLocation = LimitString(jobLocation, 200);
         PlannedStart = plannedStart;
         PostedAt = postedAt;
+    }
+
+    private string LimitString(string? input, int length)
+    {
+        if (string.IsNullOrEmpty(input)) return string.Empty;
+        return input.Substring(0, Math.Min(input.Length, length));
     }
 
     public void ReTag(Tag[] tags)

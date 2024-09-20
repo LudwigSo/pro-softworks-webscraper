@@ -1,6 +1,6 @@
 namespace Application.Ports;
 
-public interface ILogger
+public interface ILogging
 {
     void LogDebug(string message);
     void LogInformation(string message);
