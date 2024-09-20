@@ -90,7 +90,7 @@ public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper) : Ab
                 postedAt: postedAt
             );
 
-            _logger.LogInformation($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");
+            _logger.LogDebug($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");
             return project;
         }
         catch
