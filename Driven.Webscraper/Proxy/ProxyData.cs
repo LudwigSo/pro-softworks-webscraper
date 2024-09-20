@@ -14,11 +14,7 @@ public class ProxyData(string ip, int port)
 
     public string ToLog() => $"{Fails}f{Success}s; {Ip}:{Port}";
 
-    public bool IsAvailable()
-    {
-        if (Success == 0) return Fails < 2;
-        return Fails / Success < 0.1;
-    }
+    public bool IsSameConnection(ProxyData other) => Ip == other.Ip && Port == other.Port;
 
     public async Task IncrementFails() {
         await _semaphore.WaitAsync();
@@ -32,4 +28,5 @@ public class ProxyData(string ip, int port)
         Success = Success + 1;
         _semaphore.Release();
     }
+
 };

@@ -9,6 +9,11 @@ internal static class ServiceQuartzDi
     {
         services.AddQuartz(config =>
         {
+            config.ScheduleJob<ProxyRefreshJob>(trigger =>
+                trigger
+                    .WithIdentity("ProxyRefresh")
+                    .WithCronSchedule("0 */30 * * * ?")
+            );
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("HaysWebscraperJob")
