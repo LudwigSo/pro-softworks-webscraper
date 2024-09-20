@@ -1,12 +1,13 @@
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Core;
 
 namespace Driven.Logging.Serilog;
 
-public class SerilogLogger : Application.Ports.ILogger
+public class SerilogLogger(IConfigurationRoot configuration) : Application.Ports.ILogger
 {
     private readonly Logger _logger = new LoggerConfiguration()
-        .MinimumLevel.Information()
+        .ReadFrom.Configuration(configuration)
         .WriteTo.Console()
         .WriteTo.File("/app/logs/log.txt",
             rollingInterval: RollingInterval.Day,
