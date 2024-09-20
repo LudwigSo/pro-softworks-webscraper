@@ -1,6 +1,7 @@
-import { tagApi } from "@/api-configs";
+import { projectApi, tagApi } from "@/api-configs";
 import { Badge } from "../ui/badge";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { Context } from "@/App";
 import { Tag } from "@/api";
 import { errorToast, successToast } from "@/supplements/toasts";
 import { useEffect } from "react";
@@ -27,6 +28,7 @@ const ManageTags = () => {
     }),
   });
 
+  const setProjects = useContext(Context)[1];
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,6 +40,8 @@ const ManageTags = () => {
     try {
       await tagApi.tagCreatePost(values);
       await getAll();
+      await refreshProjects();
+      form.reset();
       successToast(`Tag: ${values.name} added successfully`);
     } catch (error) {
       errorToast(error);
@@ -45,6 +49,7 @@ const ManageTags = () => {
   }
 
   const [data, setData] = useState<Tag[] | null>(null);
+
   async function getAll() {
     try {
       const tags = await tagApi.tagAllGet();
@@ -59,7 +64,19 @@ const ManageTags = () => {
     try {
       await tagApi.idDelete(id);
       await getAll();
+      await refreshProjects();
       successToast("Tag removed successfully");
+    } catch (error) {
+      errorToast(error);
+    }
+  }
+
+  async function refreshProjects() {
+    try {
+      await projectApi.projectRetagPost();
+      const projects = await projectApi.projectAllActiveWithAnyTagGet();
+
+      setProjects(projects.data);
     } catch (error) {
       errorToast(error);
     }
