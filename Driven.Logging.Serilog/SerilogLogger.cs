@@ -1,10 +1,11 @@
+using Application.Ports;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Core;
 
 namespace Driven.Logging.Serilog;
 
-public class SerilogLogger(IConfigurationRoot configuration) : Application.Ports.ILogger
+public class SerilogLogger(IConfigurationRoot configuration) : ILogging
 {
     private readonly Logger _logger = new LoggerConfiguration()
         .ReadFrom.Configuration(configuration)

@@ -5,9 +5,9 @@ using System;
 
 namespace Driven.Webscraper.Proxy;
 
-public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
+public class HttpHelper(ILogging logger, IProxyLoader proxyLoader)
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProxyLoader _proxyLoader = proxyLoader ?? throw new ArgumentNullException(nameof(proxyLoader));
     public ProxyData[] Proxies { get; set; } = [];
     private readonly Random _random = new();

@@ -29,7 +29,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var logger = scope.ServiceProvider.GetRequiredService<Application.Ports.ILogger>();
+    var logger = scope.ServiceProvider.GetRequiredService<Application.Ports.ILogging>();
     var databaseContext = scope.ServiceProvider.GetRequiredService<Context>();
     await databaseContext.Database.MigrateAsync();
     logger.LogInformation("Database migrated.");
