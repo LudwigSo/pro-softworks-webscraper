@@ -7,29 +7,28 @@ internal static class ServiceQuartzDi
 {    
     internal static IServiceCollection AddServiceQuartz(this IServiceCollection services)
     {
-        services.AddScoped<HaysWebscraperJob>();
-        services.AddScoped<FreelanceDeWebscraperJob>();
         services.AddQuartz(config =>
         {
-            config.ScheduleJob<HaysWebscraperJob>(trigger => 
+            config.ScheduleJob<ProxyRefreshJob>(trigger =>
+                trigger
+                    .WithIdentity("ProxyRefresh")
+                    .WithCronSchedule("0 */30 * * * ?")
+            );
+            config.ScheduleJob<HaysWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("HaysWebscraperJob")
-                    .WithCronSchedule("0 */1 * * * ?")
+                    .StartNow()
+                    .WithCronSchedule("0 */8 * * * ?")
             );
-            config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
+            config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>
                 trigger
-                    .WithIdentity("FreelanceDeWebscraperJob")
-                    .WithCronSchedule("0 25 */12 * * ?")
+                    .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
+                    .WithCronSchedule("0 */5 * * * ?")
             );
             config.ScheduleJob<FreelancerMapOnlyNewWebscraperJob>(trigger =>
                 trigger
                     .WithIdentity("FreelancerMapOnlyNewWebscraperJob")
-                    .WithCronSchedule("0 */10 * * * ?")
-            );
-            config.ScheduleJob<FreelancerMapWebscraperJob>(trigger =>
-                trigger
-                    .WithIdentity("FreelancerMapWebscraperJob")
-                    .WithCronSchedule("0 25 */11 * * ?")
+                    .WithCronSchedule("0 */4 * * * ?")
             );
         });
         services.AddQuartzHostedService(opt =>
@@ -41,8 +40,6 @@ internal static class ServiceQuartzDi
 
     internal static IServiceCollection AddServiceQuartzForDebugging(this IServiceCollection services)
     {
-        services.AddScoped<HaysWebscraperJob>();
-        services.AddScoped<FreelanceDeWebscraperJob>();
         services.AddQuartz(config =>
         {
             config.ScheduleJob<HaysWebscraperJob>(trigger =>
@@ -50,9 +47,9 @@ internal static class ServiceQuartzDi
                     .WithIdentity("HaysWebscraperJob")
                     .WithCronSchedule("0 */1 * * * ?")
             );
-            config.ScheduleJob<FreelanceDeWebscraperJob>(trigger =>
+            config.ScheduleJob<FreelanceDeOnlyNewWebscraperJob>(trigger =>
                 trigger
-                    .WithIdentity("FreelanceDeWebscraperJob")
+                    .WithIdentity("FreelanceDeOnlyNewWebscraperJob")
                     .WithCronSchedule("0 */2 * * * ?")
             );
         });

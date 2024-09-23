@@ -1,33 +1,31 @@
-using Domain.CommandHandlers;
-using Domain.Model;
-using Domain.Ports.Queries;
+using Application.CommandHandlers;
+using Application.QueryHandlers;
+using Application.QueryHandlers.Dtos;
+using Domain;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Driving.Api.Controllers
+namespace Driving.Api.Controllers;
+
+[ApiController]
+[Route("[controller]/[action]/")]
+public class TagController(
+    TagQueryHandler tagQueryHandler, 
+    TagCommandHandler tagCommandHandler
+) : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]/[action]/")]
-    public class TagController(
-        ITagQueriesPort tagQueries, 
-        CreateTagCommandHandler createTagCommandHandler,
-        DeleteTagCommandHandler deleteTagCommandHandler
-    ) : ControllerBase
-    {
-        private readonly ITagQueriesPort _tagQueries = tagQueries ?? throw new ArgumentNullException(nameof(tagQueries));
-        private readonly CreateTagCommandHandler _createTagCommandHandler = createTagCommandHandler ?? throw new ArgumentNullException(nameof(createTagCommandHandler));
-        private readonly DeleteTagCommandHandler _deleteTagCommandHandler = deleteTagCommandHandler ?? throw new ArgumentNullException(nameof(deleteTagCommandHandler));
+    private readonly TagQueryHandler _tagQueryHandler = tagQueryHandler ?? throw new ArgumentNullException(nameof(tagQueryHandler));
+    private readonly TagCommandHandler _tagCommandHandler = tagCommandHandler ?? throw new ArgumentNullException(nameof(tagCommandHandler));
 
-        [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<Tag>), StatusCodes.Status200OK)]
-        public async Task<IEnumerable<Tag>> All() => await _tagQueries.GetAllTags();
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<TagDto>), StatusCodes.Status200OK)]
+    public async Task<IEnumerable<TagDto>> All() => await _tagQueryHandler.Handle(new AllTagsQuery());
 
-        [Route("/{id}")]
-        [HttpDelete]
-        [ProducesResponseType(typeof(IEnumerable<Tag>), StatusCodes.Status200OK)]
-        public async Task Delete(int id) => await _deleteTagCommandHandler.Handle(new DeleteTagCommand(id));
+    [Route("{id}")]
+    [HttpDelete]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task Delete(int id) => await _tagCommandHandler.Handle(new DeleteTagCommand(id));
 
-        [HttpPost]
-        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
-        public async Task Create(CreateTagCommand command) => await _createTagCommandHandler.Handle(command);
-    }
+    [HttpPost]
+    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+    public async Task Create(CreateTagCommand command) => await _tagCommandHandler.Handle(command);
 }

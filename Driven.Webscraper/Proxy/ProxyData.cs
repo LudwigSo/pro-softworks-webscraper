@@ -8,16 +8,13 @@ public class ProxyData(string ip, int port)
     public int Port { get; } = port;
     public int Fails { get; private set; }
     public int Success { get; private set; }
+    public int TotalSuccess => Success - Fails;
 
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public string ToLog() => $"{Fails}f{Success}s; {Ip}:{Port}";
 
-    public bool IsAvailable()
-    {
-        if (Success == 0) return Fails < 2;
-        return Fails / Success < 0.1;
-    }
+    public bool IsSameConnection(ProxyData other) => Ip == other.Ip && Port == other.Port;
 
     public async Task IncrementFails() {
         await _semaphore.WaitAsync();
@@ -31,4 +28,5 @@ public class ProxyData(string ip, int port)
         Success = Success + 1;
         _semaphore.Release();
     }
+
 };
