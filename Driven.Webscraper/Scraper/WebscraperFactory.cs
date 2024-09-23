@@ -1,41 +1,21 @@
-﻿using Domain.Model;
-using Domain.Ports;
+﻿using Domain;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 
 namespace Driven.Webscraper.Scraper;
 
-public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscraperPort
+public class WebscraperFactory(ILogging logger, HttpHelper httpHelper) : IWebscraperPort
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
-    public Task<List<Project>> Scrape(ProjectSource source)
+    public Task<List<Project>> Scrape(ProjectSource source, Project[]? recentProjects = null)
     {
         return source switch
         {
             ProjectSource.Hays => new HaysWebscraper(_logger, _httpHelper).Scrape(),
-            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).Scrape(),
-            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).Scrape(),
-            _ => throw new NotImplementedException()
-        };
-    }
-
-    public bool ScrapeOnlyNewSupported(ProjectSource source)
-    {
-        return source switch
-        {
-            ProjectSource.FreelanceDe => true,
-            ProjectSource.FreelancerMap => true,
-            _ => false
-        };
-    }
-
-    public Task<List<Project>> ScrapeOnlyNew(ProjectSource source, Project? lastScrapedProject)
-    {
-        return source switch
-        {
-            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(lastScrapedProject),
-            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).ScrapeOnlyNew(lastScrapedProject),
+            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).ScrapeOnlyNew(recentProjects),
+            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).ScrapeOnlyNew(),
             _ => throw new NotImplementedException()
         };
     }

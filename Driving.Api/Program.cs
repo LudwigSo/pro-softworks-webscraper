@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
+using Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,8 +28,8 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddPersistencePostgres(configuration)
-    .AddLoggingSerilog()
-    .AddDomainServices();
+    .AddLoggingSerilog(configuration)
+    .AddApplicationServices();
 
 var app = builder.Build();
 

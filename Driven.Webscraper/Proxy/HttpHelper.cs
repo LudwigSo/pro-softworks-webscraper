@@ -1,27 +1,27 @@
-﻿using Domain.Ports;
+﻿using Application.Ports;
 using HtmlAgilityPack;
 using PlainHttp;
 using System;
 
 namespace Driven.Webscraper.Proxy;
 
-public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
+public class HttpHelper(ILogging logger, IProxyLoader proxyLoader)
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProxyLoader _proxyLoader = proxyLoader ?? throw new ArgumentNullException(nameof(proxyLoader));
-    private ProxyData[] _proxies = [];
+    public ProxyData[] Proxies { get; set; } = [];
     private readonly Random _random = new();
     private readonly SemaphoreSlim _getHtmlSemaphore = new(1, 1);
 
-    public async Task<HtmlDocument> GetHtml(string url, bool withProxy = true, int retry = 0)
+    public async Task<HtmlDocument> GetHtml(string url, bool withProxy = true, int retry = 0, int retryDelayInMs = 0)
     {
-        if (withProxy && _proxies.Length == 0)
+        if (withProxy && Proxies.Length == 0)
         {
             await _getHtmlSemaphore.WaitAsync();
             try
             {
-                await InitializeProxies();
-                if (_proxies.Length == 0) throw new InvalidOperationException("no proxies available");
+                if (Proxies.Length == 0) Proxies = await InitializeProxies();
+                if (Proxies.Length == 0) throw new InvalidOperationException("no proxies available");
             }
             finally
             {
@@ -35,42 +35,45 @@ public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
         {
             proxyData = withProxy ? NextRandomProxyData() : null;
             htmlDocument = await GetHtml(url, proxyData);
-            _logger.LogDebug($"Succeeded getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
+            if (proxyData != null) await proxyData.IncrementSuccess();
+            _logger.LogDebug($"Succeeded getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url}");
         }
         catch (Exception e)
         {
             if (proxyData != null) await proxyData.IncrementFails();
 
-            _logger.LogDebug($"Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url}");
+            _logger.LogDebug($"Failed getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url}");
             if (retry < 10)
             {
+                if (retryDelayInMs > 0) await Task.Delay(retryDelayInMs);
                 return await GetHtml(url, withProxy, retry + 1);
             }
-            _logger.LogError($"Fatal Failed getting html page retry: {retry}, {proxyData?.ToLog()}, from {url} with message {e.Message}");
+            _logger.LogError($"Fatal Failed getting html page retry: {retry}, {proxyData?.ToLog() ?? "no proxy"}, from {url} with message {e.Message}");
             throw;
         }
 
         return htmlDocument;
     }
 
-    public async Task InitializeProxies()
+    public async Task<ProxyData[]> InitializeProxies()
     {
         _logger.LogInformation("Start to initialize proxies");
-        _proxies = await _proxyLoader.LoadAvailableProxies();
-        if (_proxies.Length == 0) throw new InvalidOperationException("no proxies available");
+        Proxies = await _proxyLoader.LoadAvailableProxies();
+        if (Proxies.Length == 0) throw new InvalidOperationException("no proxies available");
         
-        _logger.LogInformation($"{_proxies.Length} proxies were found");
+        _logger.LogInformation($"{Proxies.Length} proxies were found");
 
         var proxyTasks = new List<Task>();
-        foreach (var proxy in _proxies)
+        foreach (var proxy in Proxies)
         {
             var task = TestProxy(proxy);
             proxyTasks.Add(task);
         }
         Task.WaitAll([.. proxyTasks]);
 
-        _proxies = _proxies.Where(p => p.Fails == 0).ToArray();
-        _logger.LogInformation($"{_proxies.Length} proxies responded");
+        var proxiesWithResponse = Proxies.Where(p => p.Fails == 0).ToArray();
+        _logger.LogInformation($"{proxiesWithResponse.Length} proxies responded");
+        return proxiesWithResponse;
     }
 
     internal async Task TestProxy(ProxyData proxyData)
@@ -125,8 +128,9 @@ public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
 
     internal ProxyData NextRandomProxyData()
     {
-        var availableProxies = _proxies.Where(p => p.IsAvailable()).ToArray();
-        if (availableProxies.Length == 0) throw new InvalidOperationException($"{_proxies.Length} proxies in memory, but 0 fulfill available criteria");
+        if (Proxies.Length == 0) throw new InvalidOperationException($"{Proxies.Length} proxies in memory");
+        var averageProxySuccess = Proxies.OrderByDescending(p => p.TotalSuccess).ToArray()[Math.Max(0, (Proxies.Length/2)-1)].TotalSuccess;
+       var availableProxies = Proxies.Where(p => p.TotalSuccess >= averageProxySuccess).ToArray();
         return availableProxies[_random.Next(availableProxies.Length)];
     }
 }

@@ -1,14 +1,14 @@
 using System.Text.Json;
-using Domain.Model;
-using Domain.Ports;
+using Domain;
+using Application.Ports;
 using Driven.Webscraper.Proxy;
 using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSearchSiteBasedWebscraper
+public class HaysWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly ProjectSource _projectSource = ProjectSource.Hays;
@@ -36,7 +36,28 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         return projects;
     }
 
-    protected override async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
+    protected async Task<List<Project>> ScrapeSearchSiteParallel(string url, int projectsPerPage = 20)
+    {
+        var numberOfEntries = await ScrapeNumberOfProjects(url);
+        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / projectsPerPage);
+
+        var scrapePageTasks = new List<Task<List<Project>>>();
+        for (var page = 0; page < numberOfPages; page++)
+        {
+            var task = ScrapeSearchPage(url, page);
+            scrapePageTasks.Add(task);
+        }
+        Task.WaitAll([.. scrapePageTasks]);
+        return scrapePageTasks.SelectMany(t => t.Result).ToList();
+    }
+
+    protected virtual async Task<List<Project>> ScrapeSearchPage(string url, int page)
+    {
+        var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(url, page);
+        return await ScrapeProjectsByUrl(projectUrlsFromPage);
+    }
+
+    protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
     {
         try
         {
@@ -57,7 +78,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
-    protected override async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
+    protected async Task<int> ScrapeNumberOfProjects(string categoryUrl, int retry = 0)
     {
         try
         {
@@ -117,7 +138,7 @@ public class HaysWebscraper(ILogger logger, HttpHelper httpHelper) : AbstractSea
                 jobLocation: jobLocationString
             );
 
-            _logger.LogInformation($"{_projectSource}: Succeeded scraping project, retry: {retry}, url {projectUrl}");
+            _logger.LogDebug($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");
             return project;
         }
         catch
