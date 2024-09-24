@@ -88,7 +88,7 @@ const ProjectsContainer = () => {
               key={project.id}
               className={`flex-grow cursor-pointer border-2 transition duration-200 ease-in-out transform hover:scale-105 ${
                 selectedProject?.id === project.id && " border-blue-500"
-              }${textFilter(project, search) ? "" : "hidden"}`}
+              } ${textFilter(project, search) ? "" : "hidden"}`}
               onClick={() => setSelectedProject(project)}
             >
               <CardHeader>
