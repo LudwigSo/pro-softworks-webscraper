@@ -27,13 +27,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "../ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon } from "lucide-react";
 
 const ProjectsContainer = () => {
   const [search, setSearch] = useState<string>("");
+  const [date, setDate] = useState<string>("");
   const [sortBy, setSortBy] = useState<keyof ProjectDto>("firstSeenAt");
   const sortKeys: (keyof ProjectDto)[] = ["firstSeenAt", "id", "title"];
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [data, setData] = useContext(Context);
   const [selectedProject, setSelectedProject] = useState<ProjectDto | null>(
     null
@@ -42,14 +47,14 @@ const ProjectsContainer = () => {
   useEffect(() => {
     async function getAll() {
       try {
-        const projects = await projectApi.projectAllWithAnyTagGet();
+        const projects = await projectApi.projectAllWithAnyTagGet(date);
         setData(projects.data);
       } catch (error) {
         errorToast(error);
       }
     }
     getAll();
-  }, [setData]);
+  }, [date, setData]);
 
   return (
     <ResizablePanelGroup className="flex" direction={"horizontal"}>
@@ -61,8 +66,34 @@ const ProjectsContainer = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects..."
+            placeholder="Search projects... (supports regex)"
           />
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={`w-[280px] justify-start text-left font-normal ${!date ? "text-muted-foreground" : ""}`}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date ? (
+                  dayjs(date).format("DD.MM.YYYY")
+                ) : (
+                  <span>Set projects since</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={dayjs(date).toDate()}
+                onSelect={(date) => {
+                  setDate(dayjs(date).format("YYYY-MM-DD"));
+                  setCalendarOpen(false);
+                }}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <Select
             value={sortBy}
             onValueChange={(v) => {
