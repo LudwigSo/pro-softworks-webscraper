@@ -1,11 +1,8 @@
 import { projectApi, tagApi } from "@/api-configs";
-import { Badge } from "../ui/badge";
 import { useContext, useState } from "react";
 import { Context } from "@/App";
-import { Tag } from "@/api";
 import { errorToast, successToast } from "@/supplements/toasts";
 import { useEffect } from "react";
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Separator } from "@radix-ui/react-dropdown-menu";
@@ -20,6 +17,8 @@ import {
   FormDescription,
   FormMessage,
 } from "../ui/form";
+import { TagDto } from "@/api";
+import { Tag } from "./tag";
 
 const ManageTags = () => {
   const formSchema = z.object({
@@ -48,7 +47,7 @@ const ManageTags = () => {
     }
   }
 
-  const [data, setData] = useState<Tag[] | null>(null);
+  const [data, setData] = useState<TagDto[] | null>(null);
 
   async function getAll() {
     try {
@@ -59,22 +58,10 @@ const ManageTags = () => {
     }
   }
 
-  async function removeTag(id?: number) {
-    if (!id) return;
-    try {
-      await tagApi.idDelete(id);
-      await getAll();
-      await refreshProjects();
-      successToast("Tag removed successfully");
-    } catch (error) {
-      errorToast(error);
-    }
-  }
-
   async function refreshProjects() {
     try {
       await projectApi.projectRetagPost();
-      const projects = await projectApi.projectAllActiveWithAnyTagGet();
+      const projects = await projectApi.projectAllWithAnyTagGet();
 
       setProjects(projects.data);
     } catch (error) {
@@ -90,11 +77,7 @@ const ManageTags = () => {
     <>
       <p className="pl-6 pt-6">Add Tags</p>
       <Form {...form}>
-        <form
-          className="p-6 flex gap-2"
-          noValidate
-          onSubmit={form.handleSubmit(addTag)}
-        >
+        <form className="p-6 flex gap-2" onSubmit={form.handleSubmit(addTag)}>
           <FormField
             control={form.control}
             name="name"
@@ -116,19 +99,9 @@ const ManageTags = () => {
       <p className="pl-6 pt-6">All Tags</p>
       <div className="flex p-8">
         {data ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap">
             {data.map((tag) => (
-              <Badge key={tag.id}>
-                {tag.name}
-                <Button
-                  className="ml-4 h-4 w-4"
-                  onClick={() => removeTag(tag.id)}
-                  variant="destructive"
-                  size="icon"
-                >
-                  <Cross2Icon className="h-3 w-3" />
-                </Button>
-              </Badge>
+              <Tag key={tag.id} {...tag} getAll={getAll} />
             ))}
           </div>
         ) : (
