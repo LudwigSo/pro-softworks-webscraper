@@ -10,6 +10,7 @@ public static class ApplicationDi
     {
         services.AddScoped(_ => TimeProvider.System);
 
+        services.AddScoped<KeywordCommandHandler>();
         services.AddScoped<ScrapeAndProcessCommandHandler>();
         services.AddScoped<TagCommandHandler>();
 
