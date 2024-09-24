@@ -26,6 +26,25 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
+ * @interface CreateKeywordCommand
+ */
+export interface CreateKeywordCommand {
+    /**
+     * 
+     * @type {number}
+     * @memberof CreateKeywordCommand
+     */
+    'tagId'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof CreateKeywordCommand
+     */
+    'value'?: string | null;
+}
+/**
+ * 
+ * @export
  * @interface CreateTagCommand
  */
 export interface CreateTagCommand {
@@ -35,6 +54,25 @@ export interface CreateTagCommand {
      * @memberof CreateTagCommand
      */
     'name'?: string | null;
+}
+/**
+ * 
+ * @export
+ * @interface KeywordDto
+ */
+export interface KeywordDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof KeywordDto
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof KeywordDto
+     */
+    'value'?: string | null;
 }
 /**
  * 
@@ -78,124 +116,253 @@ export interface ProblemDetails {
 /**
  * 
  * @export
- * @interface Project
+ * @interface ProjectDto
  */
-export interface Project {
+export interface ProjectDto {
     /**
      * 
      * @type {number}
-     * @memberof Project
+     * @memberof ProjectDto
      */
     'id'?: number;
     /**
      * 
-     * @type {ProjectSource}
-     * @memberof Project
-     */
-    'source'?: ProjectSource;
-    /**
-     * 
      * @type {string}
-     * @memberof Project
+     * @memberof ProjectDto
      */
     'title'?: string | null;
     /**
      * 
      * @type {string}
-     * @memberof Project
+     * @memberof ProjectDto
      */
     'url'?: string | null;
     /**
      * 
-     * @type {string}
-     * @memberof Project
+     * @type {Array<TagWithoutKeywordsDto>}
+     * @memberof ProjectDto
      */
-    'projectIdentifier'?: string | null;
+    'tags'?: Array<TagWithoutKeywordsDto> | null;
     /**
      * 
      * @type {string}
-     * @memberof Project
-     */
-    'description'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof Project
-     */
-    'jobLocation'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof Project
-     */
-    'plannedStart'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof Project
-     */
-    'postedAt'?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof Project
+     * @memberof ProjectDto
      */
     'firstSeenAt'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Project
-     */
-    'removedAt'?: string | null;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof Project
-     */
-    'isActive'?: boolean;
-    /**
-     * 
-     * @type {Array<Tag>}
-     * @memberof Project
-     */
-    'tags'?: Array<Tag> | null;
 }
-
-
 /**
  * 
  * @export
- * @enum {string}
+ * @interface TagDto
  */
-
-export const ProjectSource = {
-    NUMBER_0: 0,
-    NUMBER_1: 1,
-    NUMBER_2: 2
-} as const;
-
-export type ProjectSource = typeof ProjectSource[keyof typeof ProjectSource];
-
-
-/**
- * 
- * @export
- * @interface Tag
- */
-export interface Tag {
+export interface TagDto {
     /**
      * 
      * @type {number}
-     * @memberof Tag
+     * @memberof TagDto
      */
     'id'?: number;
     /**
      * 
      * @type {string}
-     * @memberof Tag
+     * @memberof TagDto
+     */
+    'name'?: string | null;
+    /**
+     * 
+     * @type {Array<KeywordDto>}
+     * @memberof TagDto
+     */
+    'keywords'?: Array<KeywordDto> | null;
+}
+/**
+ * 
+ * @export
+ * @interface TagWithoutKeywordsDto
+ */
+export interface TagWithoutKeywordsDto {
+    /**
+     * 
+     * @type {number}
+     * @memberof TagWithoutKeywordsDto
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TagWithoutKeywordsDto
      */
     'name'?: string | null;
 }
+
+/**
+ * KeywordApi - axios parameter creator
+ * @export
+ */
+export const KeywordApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {CreateKeywordCommand} [createKeywordCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        keywordCreatePost: async (createKeywordCommand?: CreateKeywordCommand, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/keyword/create`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(createKeywordCommand, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        keywordDeleteIdDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('keywordDeleteIdDelete', 'id', id)
+            const localVarPath = `/keyword/delete/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * KeywordApi - functional programming interface
+ * @export
+ */
+export const KeywordApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = KeywordApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {CreateKeywordCommand} [createKeywordCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async keywordCreatePost(createKeywordCommand?: CreateKeywordCommand, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.keywordCreatePost(createKeywordCommand, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['KeywordApi.keywordCreatePost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async keywordDeleteIdDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.keywordDeleteIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['KeywordApi.keywordDeleteIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * KeywordApi - factory interface
+ * @export
+ */
+export const KeywordApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = KeywordApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {CreateKeywordCommand} [createKeywordCommand] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        keywordCreatePost(createKeywordCommand?: CreateKeywordCommand, options?: any): AxiosPromise<void> {
+            return localVarFp.keywordCreatePost(createKeywordCommand, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        keywordDeleteIdDelete(id: number, options?: any): AxiosPromise<void> {
+            return localVarFp.keywordDeleteIdDelete(id, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * KeywordApi - object-oriented interface
+ * @export
+ * @class KeywordApi
+ * @extends {BaseAPI}
+ */
+export class KeywordApi extends BaseAPI {
+    /**
+     * 
+     * @param {CreateKeywordCommand} [createKeywordCommand] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof KeywordApi
+     */
+    public keywordCreatePost(createKeywordCommand?: CreateKeywordCommand, options?: RawAxiosRequestConfig) {
+        return KeywordApiFp(this.configuration).keywordCreatePost(createKeywordCommand, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof KeywordApi
+     */
+    public keywordDeleteIdDelete(id: number, options?: RawAxiosRequestConfig) {
+        return KeywordApiFp(this.configuration).keywordDeleteIdDelete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
 
 /**
  * ProjectApi - axios parameter creator
@@ -205,11 +372,12 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
     return {
         /**
          * 
+         * @param {string} [since] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        projectAllActiveWithAnyTagGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/project/all-active-with-any-tag`;
+        projectAllWithAnyTagGet: async (since?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/project/all-with-any-tag`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -220,6 +388,12 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (since !== undefined) {
+                localVarQueryParameter['since'] = (since as any instanceof Date) ?
+                    (since as any).toISOString() :
+                    since;
+            }
 
 
     
@@ -273,13 +447,14 @@ export const ProjectApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
+         * @param {string} [since] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async projectAllActiveWithAnyTagGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Project>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.projectAllActiveWithAnyTagGet(options);
+        async projectAllWithAnyTagGet(since?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ProjectDto>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.projectAllWithAnyTagGet(since, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ProjectApi.projectAllActiveWithAnyTagGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ProjectApi.projectAllWithAnyTagGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -305,11 +480,12 @@ export const ProjectApiFactory = function (configuration?: Configuration, basePa
     return {
         /**
          * 
+         * @param {string} [since] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        projectAllActiveWithAnyTagGet(options?: any): AxiosPromise<Array<Project>> {
-            return localVarFp.projectAllActiveWithAnyTagGet(options).then((request) => request(axios, basePath));
+        projectAllWithAnyTagGet(since?: string, options?: any): AxiosPromise<Array<ProjectDto>> {
+            return localVarFp.projectAllWithAnyTagGet(since, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -331,12 +507,13 @@ export const ProjectApiFactory = function (configuration?: Configuration, basePa
 export class ProjectApi extends BaseAPI {
     /**
      * 
+     * @param {string} [since] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProjectApi
      */
-    public projectAllActiveWithAnyTagGet(options?: RawAxiosRequestConfig) {
-        return ProjectApiFp(this.configuration).projectAllActiveWithAnyTagGet(options).then((request) => request(this.axios, this.basePath));
+    public projectAllWithAnyTagGet(since?: string, options?: RawAxiosRequestConfig) {
+        return ProjectApiFp(this.configuration).projectAllWithAnyTagGet(since, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -358,39 +535,6 @@ export class ProjectApi extends BaseAPI {
  */
 export const TagApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
-        /**
-         * 
-         * @param {number} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        idDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('idDelete', 'id', id)
-            const localVarPath = `/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
         /**
          * 
          * @param {*} [options] Override http request option.
@@ -453,6 +597,39 @@ export const TagApiAxiosParamCreator = function (configuration?: Configuration) 
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        tagDeleteIdDelete: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('tagDeleteIdDelete', 'id', id)
+            const localVarPath = `/tag/delete/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -465,22 +642,10 @@ export const TagApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async idDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Tag>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.idDelete(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['TagApi.idDelete']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async tagAllGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Tag>>> {
+        async tagAllGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<TagDto>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.tagAllGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['TagApi.tagAllGet']?.[localVarOperationServerIndex]?.url;
@@ -498,6 +663,18 @@ export const TagApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['TagApi.tagCreatePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async tagDeleteIdDelete(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.tagDeleteIdDelete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['TagApi.tagDeleteIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -510,19 +687,10 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
     return {
         /**
          * 
-         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        idDelete(id: number, options?: any): AxiosPromise<Array<Tag>> {
-            return localVarFp.idDelete(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        tagAllGet(options?: any): AxiosPromise<Array<Tag>> {
+        tagAllGet(options?: any): AxiosPromise<Array<TagDto>> {
             return localVarFp.tagAllGet(options).then((request) => request(axios, basePath));
         },
         /**
@@ -534,6 +702,15 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
         tagCreatePost(createTagCommand?: CreateTagCommand, options?: any): AxiosPromise<void> {
             return localVarFp.tagCreatePost(createTagCommand, options).then((request) => request(axios, basePath));
         },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        tagDeleteIdDelete(id: number, options?: any): AxiosPromise<void> {
+            return localVarFp.tagDeleteIdDelete(id, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -544,17 +721,6 @@ export const TagApiFactory = function (configuration?: Configuration, basePath?:
  * @extends {BaseAPI}
  */
 export class TagApi extends BaseAPI {
-    /**
-     * 
-     * @param {number} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof TagApi
-     */
-    public idDelete(id: number, options?: RawAxiosRequestConfig) {
-        return TagApiFp(this.configuration).idDelete(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
     /**
      * 
      * @param {*} [options] Override http request option.
@@ -574,6 +740,17 @@ export class TagApi extends BaseAPI {
      */
     public tagCreatePost(createTagCommand?: CreateTagCommand, options?: RawAxiosRequestConfig) {
         return TagApiFp(this.configuration).tagCreatePost(createTagCommand, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof TagApi
+     */
+    public tagDeleteIdDelete(id: number, options?: RawAxiosRequestConfig) {
+        return TagApiFp(this.configuration).tagDeleteIdDelete(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
