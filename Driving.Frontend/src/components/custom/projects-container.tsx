@@ -55,7 +55,7 @@ const ProjectsContainer = () => {
     <ResizablePanelGroup className="flex" direction={"horizontal"}>
       <ResizablePanel
         className="h-100 min-h-screen max-h-screen !overflow-auto"
-        defaultSize={80}
+        defaultSize={100}
       >
         <div className="flex flex-wrap p-6 gap-4 mt-14">
           <Input
@@ -113,7 +113,7 @@ const ProjectsContainer = () => {
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={20} className="flex">
+      <ResizablePanel defaultSize={0} className="flex">
         {selectedProject ? (
           <div className="w-full p-4 flex flex-col gap-8 m-auto">
             <h2>{selectedProject.title}</h2>
