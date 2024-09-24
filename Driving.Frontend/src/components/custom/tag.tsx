@@ -42,6 +42,7 @@ export function Tag(tag: TagDto & { getAll: () => void }) {
         tagId: tag.id,
         value: keyword,
       });
+      await tag.getAll();
       successToast("Keyword added successfully");
     } catch (error) {
       errorToast(error);
@@ -52,6 +53,7 @@ export function Tag(tag: TagDto & { getAll: () => void }) {
     if (!id) return;
     try {
       await keyWordApi.keywordDeleteIdDelete(id);
+      await tag.getAll();
       successToast("Keyword deleted");
     } catch (error) {
       errorToast(error);
@@ -60,7 +62,7 @@ export function Tag(tag: TagDto & { getAll: () => void }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} aria-describedby={undefined}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Badge className="group relative cursor-pointer m-1 hover:mr-0 transition-all duration-300">
           {tag.name}
           <Edit className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:ml-1" />
