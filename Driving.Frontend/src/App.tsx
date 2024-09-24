@@ -12,17 +12,17 @@ import { Toaster } from "./components/ui/toaster";
 import ManageTags from "./components/custom/manage-tags";
 import ProjectsContainer from "./components/custom/projects-container";
 import React, { useState } from "react";
-import { Project } from "./api";
+import { ProjectDto } from "./api";
 
 type ProjectState = [
-  Project[],
-  React.Dispatch<React.SetStateAction<Project[]>>,
+  ProjectDto[],
+  React.Dispatch<React.SetStateAction<ProjectDto[]>>,
 ];
 
 export const Context = React.createContext<ProjectState>([[], () => {}]);
 
 function App() {
-  const [projects, setProjects]: ProjectState = useState<Project[]>([]);
+  const [projects, setProjects]: ProjectState = useState<ProjectDto[]>([]);
   return (
     <>
       <Context.Provider value={[projects, setProjects]}>

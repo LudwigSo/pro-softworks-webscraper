@@ -1,15 +1,9 @@
-import { Project } from "@/api";
+import { ProjectDto, TagDto } from "@/api";
 import { projectApi } from "@/api-configs";
 import { errorToast } from "@/supplements/toasts";
 import { useContext, useEffect, useState } from "react";
 import { Context } from "@/App";
 import dayjs from "dayjs";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 import {
   Card,
   CardHeader,
@@ -18,7 +12,6 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getProjectSourceName } from "@/enums/project-source";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -39,23 +32,17 @@ import { Separator } from "@/components/ui/separator";
 
 const ProjectsContainer = () => {
   const [search, setSearch] = useState<string>("");
-  const [sortBy, setSortBy] = useState<keyof Project>("firstSeenAt");
-  const sortKeys: (keyof Project)[] = [
-    "firstSeenAt",
-    "id",
-    "projectIdentifier",
-    "plannedStart",
-    "postedAt",
-    "title",
-    "source",
-  ];
+  const [sortBy, setSortBy] = useState<keyof ProjectDto>("firstSeenAt");
+  const sortKeys: (keyof ProjectDto)[] = ["firstSeenAt", "id", "title"];
   const [data, setData] = useContext(Context);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectDto | null>(
+    null
+  );
 
   useEffect(() => {
     async function getAll() {
       try {
-        const projects = await projectApi.projectAllActiveWithAnyTagGet();
+        const projects = await projectApi.projectAllWithAnyTagGet();
         setData(projects.data);
       } catch (error) {
         errorToast(error);
@@ -68,7 +55,7 @@ const ProjectsContainer = () => {
     <ResizablePanelGroup className="flex" direction={"horizontal"}>
       <ResizablePanel
         className="h-100 min-h-screen max-h-screen !overflow-auto"
-        defaultSize={75}
+        defaultSize={80}
       >
         <div className="flex flex-wrap p-6 gap-4 mt-14">
           <Input
@@ -79,7 +66,7 @@ const ProjectsContainer = () => {
           <Select
             value={sortBy}
             onValueChange={(v) => {
-              setSortBy(v as keyof Project);
+              setSortBy(v as keyof ProjectDto);
               setData(_.sortBy(data, [v]));
             }}
           >
@@ -96,13 +83,11 @@ const ProjectsContainer = () => {
           </Select>
         </div>
         <div className="flex flex-wrap p-6 gap-4">
-          {data.map((project) => (
+          {data.map((project: ProjectDto) => (
             <Card
               key={project.id}
-              className={`w-fit cursor-pointer transition duration-200 ease-in-out transform hover:scale-110 ${
-                selectedProject?.id === project.id
-                  ? "border-2 border-blue-500"
-                  : ""
+              className={`flex-grow cursor-pointer border-2 transition duration-200 ease-in-out transform hover:scale-105 ${
+                selectedProject?.id === project.id && " border-blue-500"
               }${textFilter(project, search) ? "" : "hidden"}`}
               onClick={() => setSelectedProject(project)}
             >
@@ -113,13 +98,10 @@ const ProjectsContainer = () => {
                     ? dayjs(project.firstSeenAt).format("DD.MM.YYYY - HH:mm")
                     : "N/A"}
                 </CardDescription>
-                <CardDescription className="!mt-0">
-                  by {getProjectSourceName(project.source)}
-                </CardDescription>
               </CardHeader>
               <CardContent className="gap-2 flex flex-wrap">
                 {project.tags ? (
-                  project.tags.map((tag) => (
+                  project.tags.map((tag: TagDto) => (
                     <Badge key={tag.id}>{tag.name}</Badge>
                   ))
                 ) : (
@@ -131,7 +113,7 @@ const ProjectsContainer = () => {
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={25} className="flex">
+      <ResizablePanel defaultSize={20} className="flex">
         {selectedProject ? (
           <div className="w-full p-4 flex flex-col gap-8 m-auto">
             <h2>{selectedProject.title}</h2>
@@ -144,59 +126,14 @@ const ProjectsContainer = () => {
                   )}
                 </span>
               </li>
-              <li className="flex items-center justify-between">
-                <span className="text-muted-foreground">Planned Start</span>
-                <span>
-                  {dayjs(selectedProject.plannedStart).format(
-                    "DD.MM.YYYY-HH:mm"
-                  ) == "Invalid Date"
-                    ? "N/A"
-                    : dayjs(selectedProject.plannedStart).format(
-                        "DD.MM.YYYY-HH:mm"
-                      )}
-                </span>
-              </li>
               <Separator className="m-2" />
-              <li className="flex items-center justify-between">
-                <span className="text-muted-foreground">Posted at</span>
-                <span>{selectedProject.postedAt}</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span className="text-muted-foreground">Source</span>
-                <span>{getProjectSourceName(selectedProject.source)}</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span className="text-muted-foreground">Joblocation</span>
-                <span>{selectedProject.jobLocation}</span>
-              </li>
-              <Separator className="m-2" />
-              <li className="flex items-center justify-between">
-                <span className="text-muted-foreground">
-                  Project Identifier
-                </span>
-                <span>{selectedProject.projectIdentifier}</span>
-              </li>
+
               <li className="flex items-center justify-between">
                 <span className="text-muted-foreground">Our Id</span>
                 <span>{selectedProject.id}</span>
               </li>
             </ul>
-            <Accordion type="single" collapsible>
-              <AccordionItem value="description">
-                <AccordionTrigger>Description</AccordionTrigger>
-                <AccordionContent>
-                  {selectedProject.description}
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="tags">
-                <AccordionTrigger>Tags</AccordionTrigger>
-                <AccordionContent>
-                  {selectedProject.tags?.map((tag) => (
-                    <Badge key={tag.id}>{tag.name}</Badge>
-                  ))}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+
             {selectedProject.url && (
               <Button
                 onClick={() =>
