@@ -3,10 +3,11 @@ using System.Text.Json;
 using Domain;
 using Application.Ports;
 using Driven.Webscraper.Proxy;
+using Flurl;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelanceDeWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
+public class FreelanceDeWebscraper(ILogging logger, HttpHelper httpHelper)
 {
     private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
@@ -20,17 +21,20 @@ public class FreelanceDeWebscraper(ILogging logger, HttpHelper httpHelper) : Abs
         "http://www.freelance.de/Projekte/K/IT-Entwicklung-Projekte/Web-Projekte"
     ];
 
-    public async Task<List<Project>> ScrapeOnlyNew(Project[]? recentProjects)
+    public async IAsyncEnumerable<Project> Scrape(Project[]? recentProjects = null)
     {
-        var projects = new List<Project>();
-        foreach (var categoryUrl in _categoryUrls)
+        foreach (var url in _categoryUrls)
         {
-            var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(categoryUrl);
-            var projectsFromPage = await ScrapeProjectsByUrl(projectUrlsFromPage, recentProjects: recentProjects, delayPerProjectInMs: 2000);
-            projects.AddRange(projectsFromPage);
-        }
+            var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(url);
 
-        return projects.Distinct().ToList();
+            foreach (var projectUrl in projectUrlsFromPage)
+            {
+                var project = await ScrapeProject(projectUrl);
+                if (project == null) continue;
+                if (recentProjects != null && recentProjects.Any(p => p.IsSameProject(project))) break;
+                yield return project;
+            }
+        }
     }
 
     protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string categoryUrl, int page = 0, int retry = 0)
@@ -49,7 +53,7 @@ public class FreelanceDeWebscraper(ILogging logger, HttpHelper httpHelper) : Abs
         }
     }
 
-    protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    protected async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {

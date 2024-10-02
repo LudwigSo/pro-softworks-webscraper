@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
+public class HaysWebscraper(ILogging logger, HttpHelper httpHelper)
 {
     private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
@@ -24,37 +24,27 @@ public class HaysWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCo
         "https://www.hays.de/jobsuche/stellenangebote-jobs/s/IT/1/r/Systemingenieur/0793F3E3-0C39-40DE-8B65-9962666F635E/j/Contracting/3/p/1?q=&e=false&pt=false"
     ];
 
-    public async Task<List<Project>> Scrape()
+
+    public async IAsyncEnumerable<Project> Scrape()
     {
-        var projects = new List<Project>();
-        foreach (var spezialisierungUrl in _haysSpezialisierungsUrls)
+        foreach (var url in _haysSpezialisierungsUrls)
         {
-            var projectsForSpezialisierung = await ScrapeSearchSiteParallel(spezialisierungUrl);
-            projects.AddRange(projectsForSpezialisierung);
+            var numberOfEntries = await ScrapeNumberOfProjects(url);
+            var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / 20);
+
+            for (var page = 0; page < numberOfPages; page++)
+            {
+                var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(url, page);
+
+                foreach (var projectUrl in projectUrlsFromPage)
+                {
+                    var project = await ScrapeProject(projectUrl);
+                    if (project == null) continue;
+                    yield return project;
+                }
+            }
+
         }
-
-        return projects;
-    }
-
-    protected async Task<List<Project>> ScrapeSearchSiteParallel(string url, int projectsPerPage = 20)
-    {
-        var numberOfEntries = await ScrapeNumberOfProjects(url);
-        var numberOfPages = (int)Math.Ceiling((double)numberOfEntries / projectsPerPage);
-
-        var scrapePageTasks = new List<Task<List<Project>>>();
-        for (var page = 0; page < numberOfPages; page++)
-        {
-            var task = ScrapeSearchPage(url, page);
-            scrapePageTasks.Add(task);
-        }
-        Task.WaitAll([.. scrapePageTasks]);
-        return scrapePageTasks.SelectMany(t => t.Result).ToList();
-    }
-
-    protected virtual async Task<List<Project>> ScrapeSearchPage(string url, int page)
-    {
-        var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(url, page);
-        return await ScrapeProjectsByUrl(projectUrlsFromPage);
     }
 
     protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string spezialisierungUrl, int page = 0, int retry = 0)
@@ -97,7 +87,7 @@ public class HaysWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCo
         }
     }
 
-    protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    protected async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {
