@@ -9,7 +9,7 @@ using HtmlAgilityPack;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper) : AbstractCommonWebscraper
+public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper)
 {
     private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
@@ -17,13 +17,17 @@ public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper) : A
     private readonly ProjectSource _projectSource = ProjectSource.FreelancerMap;
     private readonly string _url = "http://www.freelancermap.de/projektboerse.html?categories%5B0%5D=1&projectContractTypes%5B0%5D=contracting&remoteInPercent%5B0%5D=100&remoteInPercent%5B1%5D=1&countries%5B%5D=1&countries%5B%5D=2&countries%5B%5D=3&sort=1&pagenr=1";
 
-    public async Task<List<Project>> ScrapeOnlyNew()
+    public async IAsyncEnumerable<Project> Scrape(Project[]? recentProjects = null)
     {
         var projectUrlsFromPage = await ScrapeProjectUrlsFromSearchSite(_url);
-        var projectsFromPage = await ScrapeProjectsByUrlParallel(projectUrlsFromPage);
-        return projectsFromPage;
+        foreach (var projectUrl in projectUrlsFromPage)
+        {
+            var project = await ScrapeProject(projectUrl);
+            if (project == null) continue;
+            if (recentProjects != null && recentProjects.Any(p => p.IsSameProject(project))) break;
+            yield return project;
+        }
     }
-
     protected async Task<string[]> ScrapeProjectUrlsFromSearchSite(string url, int retry = 0)
     {
         try
@@ -40,7 +44,7 @@ public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper) : A
         }
     }
 
-    protected override async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
+    protected async Task<Project?> ScrapeProject(string projectUrl, int retry = 0)
     {
         try
         {
