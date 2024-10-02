@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service
+  template:
+    metadata:
+      labels:
+        app: service
+    spec:
+      containers:
+      - name: service-container
+        image: ludwigso/pro-softworks-service:latest
+        ports:
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          value: "Host=postgres-ip-service;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword"
