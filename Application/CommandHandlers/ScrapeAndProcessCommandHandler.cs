@@ -21,7 +21,6 @@ public class ScrapeAndProcessCommandHandler(
     private readonly IRealtimeMessagesPort _realtimeMessagesPort = realtimeMessagesPort ?? throw new ArgumentNullException(nameof(realtimeMessagesPort));
     private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
-
     public async Task Handle(ScrapeAndProcessCommand command)
     {
         _logger.LogInformation($"{command.Source}: Handle {nameof(ScrapeAndProcessCommand)}");
@@ -31,44 +30,17 @@ public class ScrapeAndProcessCommandHandler(
             .Where(x => x.Source == command.Source && x.FirstSeenAt > _timeProvider.GetLocalNow().AddDays(-7))
             .ToArrayAsync();
 
-        List<Project> projects;
-        try
-        {
-            projects = await _webscraperPort.Scrape(command.Source, recentProjects);
-        }
-        catch (Exception e)
-        {
-            _logger.LogException(e, $"{command.Source}: Scrape failed.");
-            return;
-        }
-
-        _logger.LogInformation($"{command.Source}: {projects.Count} potential new projects found on website");
-
-
-        var newProjects = projects
-            .Where(p => recentProjects.All(ap => !ap.IsSameProject(p)))
-            .ToList();
-
-        if (newProjects == null || newProjects.Count == 0)
-        {
-            _logger.LogInformation($"{command.Source}: No new projects found");
-            return;
-        }
-
         var allTags = await _dbContext.Tags.AsTracking().Include(t => t.Keywords).ToArrayAsync();
-        foreach (var project in projects)
+
+        await foreach (var project in _webscraperPort.Scrape(command.Source, recentProjects))
         {
+            if (recentProjects.Any(p => p.IsSameProject(project))) continue;
             project.EvaluateAndAddTags(allTags);
+            await _dbContext.Projects.AddAsync(project);
+            await _dbContext.SaveChangesAsync();
+            await _realtimeMessagesPort.NewProjectAdded(project);
+            _logger.LogInformation($"{command.Source}: Added new project: ${project.Url}");
+
         }
-        _logger.LogInformation($"{command.Source}: Tagged projects");
-
-        await _dbContext.Projects.AddRangeAsync(newProjects);
-        await _dbContext.SaveChangesAsync();
-        _logger.LogInformation($"{command.Source}: Added {newProjects.Count} projects");
-
-        var newProjectsWithTags = newProjects.Where(p => p.Tags.Count > 0).ToList();
-        await _realtimeMessagesPort.NewProjectsAdded(newProjectsWithTags);
-        _logger.LogInformation($"{command.Source}: Published realtime {newProjectsWithTags.Count} new projects with tags");
-
     }
 }
