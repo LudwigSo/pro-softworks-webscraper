@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api-container
+        image: ludwigso/pro-softworks-api:latest
+        ports:
+        - name: http-api
+          containerPort: 8080
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          value: "Host=postgres-ip-service;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword"
