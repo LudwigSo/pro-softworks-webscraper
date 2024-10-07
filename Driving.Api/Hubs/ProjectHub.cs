@@ -3,7 +3,7 @@ using Application.Ports;
 using Microsoft.AspNetCore.SignalR;
 using Application.QueryHandlers.Dtos;
 
-namespace Driven.RealtimeMessages.SignalR;
+namespace Driving.Api.Hubs;
 
 public class ProjectHub(IHubContext<ProjectHub> hubContext) : Hub, IRealtimeMessagesPort
 {
@@ -14,4 +14,3 @@ public class ProjectHub(IHubContext<ProjectHub> hubContext) : Hub, IRealtimeMess
         await _hubContext.Clients.All.SendAsync("NewProjectsAdded", ProjectDto.From(project));
     }
 }
-    

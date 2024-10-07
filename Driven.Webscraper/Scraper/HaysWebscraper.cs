@@ -1,14 +1,14 @@
 using System.Text.Json;
 using Domain;
-using Application.Ports;
 using Driven.Webscraper.Proxy;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Driven.Webscraper.Scraper;
 
-public class HaysWebscraper(ILogging logger, HttpHelper httpHelper)
+public class HaysWebscraper(ILogger logger, HttpHelper httpHelper)
 {
-    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly ProjectSource _projectSource = ProjectSource.Hays;

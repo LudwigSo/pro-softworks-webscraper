@@ -1,14 +1,12 @@
 using Application;
 using Driven.Logging.Serilog;
 using Driven.Persistence.Postgres;
-using Driven.RealtimeMessages.SignalR;
 using Driven.Webscraper;
 using Driving.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-var builder = Host.CreateDefaultBuilder()
-    .AddAdapterRealtimeMessagesSignalR();
+var builder = Host.CreateDefaultBuilder();
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -29,7 +27,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var logger = scope.ServiceProvider.GetRequiredService<Application.Ports.ILogging>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
     var databaseContext = scope.ServiceProvider.GetRequiredService<Context>();
     await databaseContext.Database.MigrateAsync();
     logger.LogInformation("Database migrated.");

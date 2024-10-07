@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 using Application;
+using Driving.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,8 @@ builder.Services
     .AddSwaggerGen()
     .AddPersistencePostgres(configuration)
     .AddLoggingSerilog(configuration)
-    .AddApplicationServices();
+    .AddApplicationServices()
+    .AddSignalR();
 
 var app = builder.Build();
 
@@ -44,6 +46,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+app.MapHub<ProjectHub>("/projecthub");
 app.MapControllers();
 
 await app.RunAsync();

@@ -2,20 +2,21 @@
 using Domain;
 using Driven.Persistence.Postgres;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.CommandHandlers;
 
 public sealed record ScrapeAndProcessCommand(ProjectSource Source);
 
 public class ScrapeAndProcessCommandHandler(
-    ILogging logger,
+    ILogger logger,
     Context dbContext,
     IWebscraperPort webscraperPort,
     IRealtimeMessagesPort realtimeMessagesPort,
     TimeProvider timeProvider
     )
 {
-    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly Context _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
     private readonly IWebscraperPort _webscraperPort = webscraperPort ?? throw new ArgumentNullException(nameof(webscraperPort));
     private readonly IRealtimeMessagesPort _realtimeMessagesPort = realtimeMessagesPort ?? throw new ArgumentNullException(nameof(realtimeMessagesPort));
