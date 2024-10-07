@@ -1,14 +1,13 @@
-﻿using Application.Ports;
-using Driven.Webscraper.Proxy;
+﻿using Driven.Webscraper.Proxy;
 using Quartz;
 
 namespace Driving.Service.Jobs;
 
 [DisallowConcurrentExecution]
-internal class ProxyRefreshJob(HttpHelper httpHelper, ILogging logger) : IJob
+internal class ProxyRefreshJob(HttpHelper httpHelper, ILogger logger) : IJob
 {
     private HttpHelper HttpHelper { get; } = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
-    private ILogging Logger { get; } = logger ?? throw new ArgumentNullException(nameof(logger));
+    private ILogger Logger { get; } = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task Execute(IJobExecutionContext context)
     {

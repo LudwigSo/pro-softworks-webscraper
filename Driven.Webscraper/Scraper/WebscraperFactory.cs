@@ -1,12 +1,13 @@
 ﻿using Domain;
 using Application.Ports;
 using Driven.Webscraper.Proxy;
+using Microsoft.Extensions.Logging;
 
 namespace Driven.Webscraper.Scraper;
 
-public class WebscraperFactory(ILogging logger, HttpHelper httpHelper) : IWebscraperPort
+public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscraperPort
 {
-    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     IAsyncEnumerable<Project> IWebscraperPort.Scrape(ProjectSource source, Project[]? recentProjects)
