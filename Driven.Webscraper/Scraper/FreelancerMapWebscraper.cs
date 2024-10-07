@@ -1,17 +1,13 @@
 ﻿using System.Globalization;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using Domain;
-using Application.Ports;
 using Driven.Webscraper.Proxy;
-using Flurl;
-using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelancerMapWebscraper(ILogging logger, HttpHelper httpHelper)
+public class FreelancerMapWebscraper(ILogger logger, HttpHelper httpHelper)
 {
-    private readonly ILogging _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     private readonly ProjectSource _projectSource = ProjectSource.FreelancerMap;
