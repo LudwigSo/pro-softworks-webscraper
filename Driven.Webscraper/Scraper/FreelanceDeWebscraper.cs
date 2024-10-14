@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Driven.Webscraper.Scraper;
 
-public class FreelanceDeWebscraper(ILogger logger, HttpHelper httpHelper)
+public class FreelanceDeWebscraper(ILogger<FreelanceDeWebscraper> logger, HttpHelper httpHelper)
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));

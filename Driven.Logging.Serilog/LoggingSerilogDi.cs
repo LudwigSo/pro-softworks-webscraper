@@ -12,7 +12,7 @@ public static class LoggingSerilogDi
     public static IServiceCollection AddLoggingSerilog(this IServiceCollection services, IConfigurationRoot configuration)
     {
 
-         Log.Logger = new LoggerConfiguration()
+         var logger = new LoggerConfiguration()
         .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
         .MinimumLevel.Information()
@@ -22,6 +22,7 @@ public static class LoggingSerilogDi
             rollOnFileSizeLimit: true)
         .CreateLogger();
 
+        services.AddScoped<ILogger>(logger);
         services.AddLogging(loggingBuilder =>
         {
             loggingBuilder.ClearProviders();

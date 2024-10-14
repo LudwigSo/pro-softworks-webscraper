@@ -5,18 +5,23 @@ using Microsoft.Extensions.Logging;
 
 namespace Driven.Webscraper.Scraper;
 
-public class WebscraperFactory(ILogger logger, HttpHelper httpHelper) : IWebscraperPort
+public class WebscraperFactory(
+    HaysWebscraper haysWebscraper,
+    FreelanceDeWebscraper freelanceDeWebscraper,
+    FreelancerMapWebscraper freelancerMapWebscraper
+    ) : IWebscraperPort
 {
-    private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly HttpHelper _httpHelper = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
+    private readonly HaysWebscraper _haysWebscraper = haysWebscraper ?? throw new ArgumentNullException(nameof(haysWebscraper));
+    private readonly FreelanceDeWebscraper _freelanceDeWebscraper = freelanceDeWebscraper ?? throw new ArgumentNullException(nameof(freelanceDeWebscraper));
+    private readonly FreelancerMapWebscraper _freelancerMapWebscraper = freelancerMapWebscraper ?? throw new ArgumentNullException(nameof(freelancerMapWebscraper));
 
     IAsyncEnumerable<Project> IWebscraperPort.Scrape(ProjectSource source, Project[]? recentProjects)
     {
         return source switch
         {
-            ProjectSource.Hays => new HaysWebscraper(_logger, _httpHelper).Scrape(),
-            ProjectSource.FreelanceDe => new FreelanceDeWebscraper(_logger, _httpHelper).Scrape(recentProjects),
-            ProjectSource.FreelancerMap => new FreelancerMapWebscraper(_logger, _httpHelper).Scrape(recentProjects),
+            ProjectSource.Hays => _haysWebscraper.Scrape(),
+            ProjectSource.FreelanceDe => _freelanceDeWebscraper.Scrape(recentProjects),
+            ProjectSource.FreelancerMap => _freelancerMapWebscraper.Scrape(recentProjects),
             _ => throw new NotImplementedException()
         };
     }

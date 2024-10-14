@@ -1,14 +1,27 @@
 using Driven.Persistence.Postgres;
-using Driven.Logging.Serilog;
 using Domain;
+using Application;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
-using Application;
 using Driving.Api.Hubs;
+using Serilog;
+using Serilog.Events;
+using Driven.Webscraper;
+using Application.Ports;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File("/app/logs/log.txt",
+        rollingInterval: RollingInterval.Day,
+        rollOnFileSizeLimit: true)
+    .CreateLogger();
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -29,9 +42,13 @@ builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddPersistencePostgres(configuration)
-    .AddLoggingSerilog(configuration)
-    .AddApplicationServices()
-    .AddSignalR();
+    .AddWebscraper()
+    .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger: logger, dispose: true))
+    .AddApplicationServices();
+
+builder.Services.AddHealthChecks();
+builder.Services.AddScoped<IRealtimeMessagesPort, ProjectHub>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -41,14 +58,15 @@ app.UseCors(builder => builder
     .AllowAnyHeader()
 );
 
+app.MapHub<ProjectHub>("/projectHub");
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseRouting();
-app.MapHub<ProjectHub>("/projecthub");
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 await app.RunAsync();

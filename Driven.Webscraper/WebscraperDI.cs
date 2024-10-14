@@ -9,6 +9,9 @@ public static class WebscraperDi
 {
     public static IServiceCollection AddWebscraper(this IServiceCollection services)
     {
+        services.AddScoped<HaysWebscraper>();
+        services.AddScoped<FreelanceDeWebscraper>();
+        services.AddScoped<FreelancerMapWebscraper>();
         services.AddScoped<IWebscraperPort, WebscraperFactory>();
         services.AddSingleton<IProxyLoader, ProxyscrapeLoader>();
         services.AddSingleton<HttpHelper>();
