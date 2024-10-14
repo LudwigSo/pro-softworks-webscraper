@@ -9,7 +9,7 @@ namespace Application.CommandHandlers;
 public sealed record ScrapeAndProcessCommand(ProjectSource Source);
 
 public class ScrapeAndProcessCommandHandler(
-    ILogger logger,
+    ILogger<ScrapeAndProcessCommandHandler> logger,
     Context dbContext,
     IWebscraperPort webscraperPort,
     IRealtimeMessagesPort realtimeMessagesPort,

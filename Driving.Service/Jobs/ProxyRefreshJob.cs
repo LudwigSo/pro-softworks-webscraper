@@ -4,10 +4,10 @@ using Quartz;
 namespace Driving.Service.Jobs;
 
 [DisallowConcurrentExecution]
-internal class ProxyRefreshJob(HttpHelper httpHelper, ILogger logger) : IJob
+internal class ProxyRefreshJob(ILogger<ProxyRefreshJob> logger, HttpHelper httpHelper) : IJob
 {
-    private HttpHelper HttpHelper { get; } = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
     private ILogger Logger { get; } = logger ?? throw new ArgumentNullException(nameof(logger));
+    private HttpHelper HttpHelper { get; } = httpHelper ?? throw new ArgumentNullException(nameof(httpHelper));
 
     public async Task Execute(IJobExecutionContext context)
     {

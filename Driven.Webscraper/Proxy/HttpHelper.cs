@@ -4,7 +4,7 @@ using PlainHttp;
 
 namespace Driven.Webscraper.Proxy;
 
-public class HttpHelper(ILogger logger, IProxyLoader proxyLoader)
+public class HttpHelper(ILogger<HttpHelper> logger, IProxyLoader proxyLoader)
 {
     private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IProxyLoader _proxyLoader = proxyLoader ?? throw new ArgumentNullException(nameof(proxyLoader));

@@ -4,6 +4,8 @@ include:
 services:
   drivingservice:
     image: drivingservice
+    networks:
+      - service-api-network
     build:
       context: .
       dockerfile: Driving.Service/Dockerfile
@@ -12,6 +14,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # drivingapi:
+      #   condition: service_healthy
       # browserless:
       #   condition: service_healthy
     environment:
@@ -24,6 +28,8 @@ services:
   
   drivingapi:
     image: drivingapi
+    networks:
+      - service-api-network
     build:
       context: .
       dockerfile: Driving.Api/Dockerfile
@@ -39,6 +45,11 @@ services:
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - logs:/app/logs
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f https://drivingapi/health || exit 1"]
+    #   interval: 5s
+    #   timeout: 5s
+    #   retries: 8
 
   db:
     image: postgres:latest
@@ -54,7 +65,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -d mydatabase -U myuser" ]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 8
       # browserless:
       #   image: browserless/chrome
       #   container_name: "browserless"
@@ -70,6 +81,10 @@ services:
       #     retries: 5
       #     start_period: 15s
       #     start_interval: 5s
+networks:
+  service-api-network:
+    driver: bridge
+
 volumes:
   postgres_data:
   logs:
