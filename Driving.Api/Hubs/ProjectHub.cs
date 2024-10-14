@@ -11,6 +11,6 @@ public class ProjectHub(IHubContext<ProjectHub> hubContext) : Hub, IRealtimeMess
 
     public async Task NewProjectAdded(Project project)
     {
-        await _hubContext.Clients.All.SendAsync("NewProjectsAdded", ProjectDto.From(project));
+        await _hubContext.Clients.All.SendAsync("NewProjectAdded", ProjectDto.From(project));
     }
 }
