@@ -4,58 +4,42 @@ using Driven.Webscraper;
 using Driving.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Serilog.Events;
 
 
 var builder = Host.CreateDefaultBuilder();
-
-var logger = new LoggerConfiguration()
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-    .MinimumLevel.Information()
-    .WriteTo.Console()
-    .WriteTo.File("/app/logs/log.txt",
-        rollingInterval: RollingInterval.Day,
-        rollOnFileSizeLimit: true)
-    .CreateLogger();
-
-//.UseSerilog((context, services, configuration) => configuration
-//    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-//    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-//    .MinimumLevel.Information()
-//    .WriteTo.Console()
-//    .WriteTo.File("/app/logs/log.txt",
-//        rollingInterval: RollingInterval.Day,
-//        rollOnFileSizeLimit: true)
-//);
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json")
     .Build();
 
+
 builder = builder.ConfigureServices((context, services) =>
 {
+    // add custom services
     services.AddPersistencePostgres(configuration)
-        .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger: logger, dispose: true))
         .AddApplicationServices()
         .AddRealtimeMessagesSignalR()
         .AddWebscraper()
         .AddServiceQuartz();
+
+    // add preconfigured services
+    var logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
+    services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders().AddSerilog(logger: logger, dispose: true));
 });
 
+// build and run app
 
 var app = builder.Build();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var scopedLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-//    var databaseContext = scope.ServiceProvider.GetRequiredService<Context>();
-//    await databaseContext.Database.MigrateAsync();
-//    scopedLogger.LogInformation("Database migrated.");
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var scopedLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var databaseContext = scope.ServiceProvider.GetRequiredService<Context>();
+    await databaseContext.Database.MigrateAsync();
+    scopedLogger.LogInformation("Database migrated.");
+}
 
 // will block until the last running job completes
 await app.RunAsync();
