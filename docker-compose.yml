@@ -52,7 +52,20 @@ services:
       timeout: 5s
       retries: 8
 
-    
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    command: start-dev
+    environment:
+      - KC_HEALTH_ENABLED=true
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - keycloak:/opt/keycloak/data
+    ports:
+      - 18080:8080
+
 volumes:
   postgres_data:
   logs:
+  keaycloak:

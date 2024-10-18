@@ -7,6 +7,9 @@ using System.Text.Json.Serialization;
 using Driving.Api.Hubs;
 using Serilog;
 using Driven.Webscraper;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +38,22 @@ var logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).Cre
 builder.Services
     .AddProblemDetails()
     .AddEndpointsApiExplorer()
-    .AddSwaggerGen()
+    .AddSwaggerGenWithAuth(configuration)
     .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger: logger, dispose: true));
 
 builder.Services.AddSignalR();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o => 
+    { 
+        o.RequireHttpsMetadata = false;
+        o.Audience = configuration["Keycloak:Audience"]; 
+        o.MetadataAddress = configuration["Keycloak:MetadataAddress"]!;
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["Keycloak:ValidIssuer"],
+        };
+    });
 
 // build and run app
 var app = builder.Build();
@@ -57,6 +72,9 @@ app.UseRouting();
 app.MapHub<ProjectHub>("/projectHub");
 app.MapControllers();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 await app.RunAsync();
 
 internal class SlugifyRouteParameterTransformer : IOutboundParameterTransformer
@@ -65,5 +83,55 @@ internal class SlugifyRouteParameterTransformer : IOutboundParameterTransformer
     {
         var valueStr = value?.ToString();
         return valueStr == null ? null : Regex.Replace(valueStr, "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
+    }
+}
+
+internal static class SwaggerGenExtension
+{
+    public static IServiceCollection AddSwaggerGenWithAuth(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSwaggerGen(s =>
+        {
+            s.CustomSchemaIds(id => id.FullName!.Replace('+', '-'));
+
+            s.AddSecurityDefinition("Keycloak", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.OAuth2,
+                Flows = new OpenApiOAuthFlows
+                {
+                    Implicit = new OpenApiOAuthFlow
+                    {
+                        AuthorizationUrl = new Uri(configuration["Keycloak:AuthorizationUrl"]!),
+                        Scopes = new Dictionary<string, string>
+                        {
+                            { "openid", "openid" },
+                            { "profile", "profile" },
+                        }
+                    }
+                }
+            });
+
+            var securityRequirement = new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Id = "Keycloak",
+                            Type = ReferenceType.SecurityScheme,
+                        },
+                        In = ParameterLocation.Header,
+                        Name = "Bearer",
+                        Scheme = "Bearer"
+                    },
+                    []
+                }
+            };
+
+            s.AddSecurityRequirement(securityRequirement);
+            //s.SwaggerDoc("v1", new() { Title = "Driving.Api", Version = "v1" });
+        });
+        return services;
     }
 }
