@@ -12,17 +12,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      # drivingapi:
-      #   condition: service_healthy
-      # browserless:
-      #   condition: service_healthy
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=mydatabase;Username=myuser;Password=mypassword;
-      # - BROWSERLESS_URL=http://browserless:3000
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - logs:/app/logs
-      # - .:/app
   
   drivingapi:
     image: drivingapi
@@ -41,11 +35,6 @@ services:
     volumes:
       - ~/.vsdbg:/remote_debugger:rw
       - logs:/app/logs
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl -f https://drivingapi/health || exit 1"]
-    #   interval: 5s
-    #   timeout: 5s
-    #   retries: 8
 
   db:
     image: postgres:latest
@@ -62,21 +51,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 8
-      # browserless:
-      #   image: browserless/chrome
-      #   container_name: "browserless"
-      #   ports:
-      #     - "3000:3000"
-      #   environment:
-      #     - MAX_CONCURRENT_SESSIONS=10
-      #     - BROWSERLESS_TOKEN=094632bb-e326-4c63-b953-82b55700b14c
-      #   healthcheck:
-      #     test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
-      #     interval: 5s
-      #     timeout: 10s
-      #     retries: 5
-      #     start_period: 15s
-      #     start_interval: 5s
+
+    
 volumes:
   postgres_data:
   logs:
