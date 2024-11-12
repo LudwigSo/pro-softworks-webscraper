@@ -68,4 +68,4 @@ services:
 volumes:
   postgres_data:
   logs:
-  keaycloak:
+  keycloak:

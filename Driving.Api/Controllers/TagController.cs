@@ -2,6 +2,7 @@ using Application.CommandHandlers;
 using Application.QueryHandlers;
 using Application.QueryHandlers.Dtos;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Driving.Api.Controllers;
@@ -17,6 +18,7 @@ public class TagController(
     private readonly TagCommandHandler _tagCommandHandler = tagCommandHandler ?? throw new ArgumentNullException(nameof(tagCommandHandler));
 
     [HttpGet]
+    [Authorize(Roles = "employee")]
     [ProducesResponseType(typeof(IEnumerable<TagDto>), StatusCodes.Status200OK)]
     public async Task<IEnumerable<TagDto>> All() => await _tagQueryHandler.Handle(new AllTagsQuery());
 
@@ -28,4 +30,11 @@ public class TagController(
     [HttpPost]
     [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
     public async Task Create(CreateTagCommand command) => await _tagCommandHandler.Handle(command);
+
+    [HttpGet]
+    [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
+    public async Task<ActionResult> GetUser()
+    {
+        return Ok(User.Claims.ToDictionary(c => c.Type, c => c.Value));
+    }
 }

@@ -26,6 +26,7 @@ public class Context : DbContext
             entity.Property(e => e.ProjectIdentifier).HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(5000);
             entity.Property(e => e.JobLocation).HasMaxLength(200);
+            entity.Property(e => e.ClaimedBy).HasMaxLength(100);
             entity.Property(e => e.PlannedStart).HasColumnType("timestamp");
             entity.Property(e => e.PostedAt).HasColumnType("timestamp");
             entity.Property(e => e.FirstSeenAt).HasColumnType("timestamp").IsRequired();

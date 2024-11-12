@@ -9,6 +9,7 @@ public class Project
     public string? ProjectIdentifier { get; }
     public string? Description { get; }
     public string? JobLocation { get; }
+    public string? ClaimedBy { get; private set; }
     public DateTime? PlannedStart { get; }
     public DateTime? PostedAt { get; }
     public DateTime FirstSeenAt { get; } = DateTime.Now;
@@ -69,6 +70,8 @@ public class Project
 
         return true;
     }
+
+    public void Claim(string claimer) => ClaimedBy = claimer;
 
     public string ToLogMessage() => $"{Source}; {PostedAt}; ({Url})";
 }

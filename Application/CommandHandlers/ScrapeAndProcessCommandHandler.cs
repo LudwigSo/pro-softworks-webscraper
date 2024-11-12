@@ -33,6 +33,8 @@ public class ScrapeAndProcessCommandHandler(
 
         var allTags = await _dbContext.Tags.AsTracking().Include(t => t.Keywords).ToArrayAsync();
 
+        if (command.Source == ProjectSource.Hays) return;
+
         await foreach (var project in _webscraperPort.Scrape(command.Source, recentProjects))
         {
             if (recentProjects.Any(p => p.IsSameProject(project))) continue;
