@@ -87,6 +87,7 @@ public class FreelancerMapWebscraper(ILogger<FreelancerMapWebscraper> logger, Ht
                 description: description,
                 jobLocation: jobLocation,
                 plannedStart: plannedStart,
+                plannedStartAsString: plannedStartString,
                 postedAt: postedAt
             );
 

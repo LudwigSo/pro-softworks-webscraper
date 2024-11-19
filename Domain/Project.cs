@@ -4,15 +4,18 @@ public class Project
 {
     public int Id { get; init; }
     public ProjectSource Source { get; }
-    public string Title { get; }
-    public string Url { get; }
+    public string Title { get; } = "";
+    public string Url { get; } = "";
     public string? ProjectIdentifier { get; }
     public string? Description { get; }
     public string? JobLocation { get; }
+    public string? PlannedStartAsString { get; }
     public DateTime? PlannedStart { get; }
     public DateTime? PostedAt { get; }
     public DateTime FirstSeenAt { get; } = DateTime.Now;
     public List<Tag> Tags { get; } = new();
+
+    protected Project() { }
 
     public Project(
         ProjectSource source,
@@ -21,6 +24,7 @@ public class Project
         string? projectIdentifier = null,
         string? description = null,
         string? jobLocation = null,
+        string? plannedStartAsString = null,
         DateTime? plannedStart = null,
         DateTime? postedAt = null
     )
@@ -31,6 +35,7 @@ public class Project
         ProjectIdentifier = LimitString(projectIdentifier, 200);
         Description = LimitString(description, 5000);
         JobLocation = LimitString(jobLocation, 200);
+        PlannedStartAsString = LimitString(plannedStartAsString, 250);
         PlannedStart = plannedStart;
         PostedAt = postedAt;
     }

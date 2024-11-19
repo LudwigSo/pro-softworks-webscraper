@@ -12,7 +12,9 @@ public record ProjectDto(
     string Title,
     string Url,
     TagWithoutKeywordsDto[] Tags,
-    DateTime FirstSeenAt
+    DateTime FirstSeenAt,
+    string? PlannedStartAsString,
+    DateTime? PlannedStart
 )
 {
     public static ProjectDto From(Project project)
@@ -22,7 +24,9 @@ public record ProjectDto(
             project.Title,
             project.Url,
             project.Tags.Select(TagWithoutKeywordsDto.From).ToArray(),
-            project.FirstSeenAt
+            project.FirstSeenAt,
+            project.PlannedStartAsString,
+            project.PlannedStart
         );
     }
 }
