@@ -64,7 +64,7 @@ public class HaysWebscraper(ILogger<HaysWebscraper> logger, HttpHelper httpHelpe
 
     private static string[] ExtractProjectUrls(HtmlDocument searchSite)
     {
-        var projectUrls = searchSite.DocumentNode.SelectNodes("//a[@class='search__result__header__a']");
+        var projectUrls = searchSite.DocumentNode.SelectNodes("//a[@class='search__result__link']");
         return projectUrls.Select(url => url.GetAttributeValue("href", "")).Where(s => s != "").ToArray();
     }
 
@@ -73,7 +73,7 @@ public class HaysWebscraper(ILogger<HaysWebscraper> logger, HttpHelper httpHelpe
         try
         {
             var mainPage = await _httpHelper.GetHtml(categoryUrl, withProxy: false);
-            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='hays__search__number-of-results']");
+            var numberOfEntriesDiv = mainPage.DocumentNode.SelectSingleNode("//div[@class='search__toolbar']/div/h4");
             var innerText = numberOfEntriesDiv.InnerText.Trim();
             innerText = innerText.Replace("\n", "").Replace(" ", "").Replace("Ergebnisse", "").Replace("Ergebnis", "");
             var amountOfProjects = int.Parse(innerText);
@@ -95,6 +95,13 @@ public class HaysWebscraper(ILogger<HaysWebscraper> logger, HttpHelper httpHelpe
             var projectSite = await _httpHelper.GetHtml(projectUrl, withProxy: false);
 
             var projectScript = projectSite.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']").InnerText;
+
+            var plannedStartAsString = projectSite
+                .DocumentNode
+                .SelectSingleNode("//div[@class='clock-icon mask']/following-sibling::div")
+                .InnerText
+                .Remove(0, "Startdatum: ".Count())
+                .Trim();
 
             var jsonDoc = JsonDocument.Parse(projectScript);
             var title = jsonDoc.RootElement.GetProperty("title").GetString();
@@ -125,7 +132,9 @@ public class HaysWebscraper(ILogger<HaysWebscraper> logger, HttpHelper httpHelpe
                 url: url,
                 projectIdentifier: identifier.GetString() ?? "",
                 description: descriptionString,
-                jobLocation: jobLocationString
+                jobLocation: jobLocationString,
+                plannedStartAsString: plannedStartAsString,
+                plannedStart: null
             );
 
             _logger.LogDebug($"Succeeded scraping project ({retry}): {project.ToLogMessage()}");

@@ -101,6 +101,7 @@ public class FreelanceDeWebscraper(ILogger<FreelanceDeWebscraper> logger, HttpHe
                 description: description,
                 jobLocation: jobLocation,
                 plannedStart: plannedStart,
+                plannedStartAsString: plannedStartString,
                 postedAt: postedAt
             );
 
